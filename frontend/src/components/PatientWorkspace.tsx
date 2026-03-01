@@ -338,82 +338,121 @@ function WorkspaceContent({
     );
   }
 
-  // Overview (default)
+  // Patient Chart (overview)
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      {/* Demographics */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">
-            {patient.firstName} {patient.lastName}
-          </h1>
-          <div className="flex gap-3">
-            <button
-              onClick={() => setView({ type: "editPatient" })}
-              className="rounded-lg bg-slate-600 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors"
-            >
-              Edit
-            </button>
-            <button
-              onClick={onDeletePatient}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-        <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <dt className="text-xs font-semibold uppercase text-gray-500">Date of Birth</dt>
-            <dd className="mt-1 text-sm text-gray-900">{patient.dateOfBirth}</dd>
-          </div>
-          <div>
-            <dt className="text-xs font-semibold uppercase text-gray-500">Gender</dt>
-            <dd className="mt-1 text-sm text-gray-900">{patient.gender}</dd>
-          </div>
-          <div>
-            <dt className="text-xs font-semibold uppercase text-gray-500">Phone</dt>
-            <dd className="mt-1 text-sm text-gray-900">{patient.phone || "N/A"}</dd>
-          </div>
-          <div>
-            <dt className="text-xs font-semibold uppercase text-gray-500">Email</dt>
-            <dd className="mt-1 text-sm text-gray-900">{patient.email || "N/A"}</dd>
-          </div>
-          <div className="sm:col-span-2">
-            <dt className="text-xs font-semibold uppercase text-gray-500">Address</dt>
-            <dd className="mt-1 text-sm text-gray-900">{patient.address || "N/A"}</dd>
-          </div>
-        </dl>
-      </div>
-
-      {/* Recent Encounters */}
-      <div>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">Recent Encounters</h2>
+    <div className="space-y-6">
+      {/* Patient Header */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">
+          {patient.firstName} {patient.lastName}
+        </h1>
+        <div className="flex gap-3">
           <button
-            onClick={() => setView({ type: "encounters" })}
-            className="text-sm font-medium text-slate-600 hover:text-slate-800"
+            onClick={() => setView({ type: "editPatient" })}
+            className="rounded-lg bg-slate-600 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors"
           >
-            View all
+            Edit
+          </button>
+          <button
+            onClick={onDeletePatient}
+            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors"
+          >
+            Delete
           </button>
         </div>
-        <EncounterList
-          encounters={encounters.slice(0, 5)}
-          patientId={patientId}
-          onView={onViewEncounter}
-        />
       </div>
 
-      {/* Notes */}
-      <div>
-        <h2 className="mb-4 text-xl font-bold text-gray-900">Clinical Notes</h2>
-        <NoteList notes={notes.filter((n) => !n.encounterId)} />
-      </div>
+      {/* Card Grid */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Demographics */}
+        <div className="rounded-lg border border-gray-200 bg-white p-5">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">Demographics</h2>
+          <dl className="grid grid-cols-2 gap-4">
+            <div>
+              <dt className="text-xs text-gray-500">Date of Birth</dt>
+              <dd className="mt-0.5 text-sm text-gray-900">{patient.dateOfBirth}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-gray-500">Gender</dt>
+              <dd className="mt-0.5 text-sm text-gray-900">{patient.gender}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-gray-500">Phone</dt>
+              <dd className="mt-0.5 text-sm text-gray-900">{patient.phone || "N/A"}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-gray-500">Email</dt>
+              <dd className="mt-0.5 text-sm text-gray-900">{patient.email || "N/A"}</dd>
+            </div>
+            <div className="col-span-2">
+              <dt className="text-xs text-gray-500">Address</dt>
+              <dd className="mt-0.5 text-sm text-gray-900">{patient.address || "N/A"}</dd>
+            </div>
+          </dl>
+        </div>
 
-      {/* Add Note Form */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h3 className="mb-4 text-lg font-semibold text-gray-900">Add Note</h3>
-        <NoteForm onSubmit={onAddNote} />
+        {/* Recent Encounters */}
+        <div className="rounded-lg border border-gray-200 bg-white p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Recent Encounters</h2>
+            <button
+              onClick={() => setView({ type: "encounters" })}
+              className="text-xs font-medium text-slate-600 hover:text-slate-800"
+            >
+              View all
+            </button>
+          </div>
+          {encounters.length === 0 ? (
+            <p className="text-sm text-gray-400">No encounters yet.</p>
+          ) : (
+            <EncounterList
+              encounters={encounters.slice(0, 3)}
+              patientId={patientId}
+              onView={onViewEncounter}
+              compact
+            />
+          )}
+        </div>
+
+        {/* Allergies */}
+        <div className="rounded-lg border border-gray-200 bg-white p-5">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">Allergies</h2>
+          <p className="text-sm text-gray-400">No known allergies.</p>
+          <span className="mt-3 inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500 uppercase">
+            Coming soon
+          </span>
+        </div>
+
+        {/* Medications */}
+        <div className="rounded-lg border border-gray-200 bg-white p-5">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">Medications</h2>
+          <p className="text-sm text-gray-400">No active medications.</p>
+          <span className="mt-3 inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500 uppercase">
+            Coming soon
+          </span>
+        </div>
+
+        {/* Prescriptions */}
+        <div className="rounded-lg border border-gray-200 bg-white p-5">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">Prescriptions</h2>
+          <p className="text-sm text-gray-400">No active prescriptions.</p>
+          <span className="mt-3 inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500 uppercase">
+            Coming soon
+          </span>
+        </div>
+
+        {/* Clinical Notes */}
+        <div className="rounded-lg border border-gray-200 bg-white p-5">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">Clinical Notes</h2>
+          {notes.filter((n) => !n.encounterId).length === 0 ? (
+            <p className="text-sm text-gray-400">No notes yet.</p>
+          ) : (
+            <NoteList notes={notes.filter((n) => !n.encounterId)} />
+          )}
+          <div className="mt-4 border-t border-gray-100 pt-4">
+            <NoteForm onSubmit={onAddNote} />
+          </div>
+        </div>
       </div>
     </div>
   );

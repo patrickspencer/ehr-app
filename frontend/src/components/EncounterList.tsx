@@ -7,6 +7,7 @@ interface EncounterListProps {
   encounters: Encounter[];
   patientId: number;
   onView?: (encounterId: number) => void;
+  compact?: boolean;
 }
 
 const statusColors: Record<string, string> = {
@@ -27,9 +28,36 @@ const typeLabels: Record<string, string> = {
   PROCEDURE: "Procedure",
 };
 
-export default function EncounterList({ encounters, patientId, onView }: EncounterListProps) {
+export default function EncounterList({ encounters, patientId, onView, compact }: EncounterListProps) {
   if (encounters.length === 0) {
     return <p className="text-gray-500 text-sm">No encounters yet.</p>;
+  }
+
+  if (compact) {
+    return (
+      <ul className="divide-y divide-gray-100">
+        {encounters.map((enc) => (
+          <li key={enc.id} className="flex items-center justify-between py-2.5">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-gray-900">
+                {typeLabels[enc.encounterType] || enc.encounterType}
+              </p>
+              <p className="text-xs text-gray-500">{enc.encounterDate} &middot; {enc.provider}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${statusColors[enc.status] || "bg-gray-100 text-gray-700"}`}>
+                {enc.status}
+              </span>
+              {onView && (
+                <button onClick={() => onView(enc.id)} className="text-xs font-medium text-slate-600 hover:text-slate-800">
+                  View
+                </button>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    );
   }
 
   return (
