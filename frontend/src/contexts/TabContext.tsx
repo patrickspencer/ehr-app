@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useCallback } from "react";
+import { createContext, useContext, useState, ReactNode, useCallback, useEffect, useRef } from "react";
 
 export interface Tab {
   patientId: number;
@@ -17,9 +17,35 @@ interface TabContextValue {
 
 const TabContext = createContext<TabContextValue | null>(null);
 
-export function TabProvider({ children }: { children: ReactNode }) {
-  const [tabs, setTabs] = useState<Tab[]>([]);
-  const [activeTabId, setActiveTabId] = useState<number | null>(null);
+function storageKey(userId: number) {
+  return `ehr_tabs_${userId}`;
+}
+
+function loadTabs(userId: number): { tabs: Tab[]; activeTabId: number | null } {
+  try {
+    const raw = localStorage.getItem(storageKey(userId));
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed.tabs)) {
+        return { tabs: parsed.tabs, activeTabId: parsed.activeTabId ?? null };
+      }
+    }
+  } catch { /* ignore corrupt data */ }
+  return { tabs: [], activeTabId: null };
+}
+
+function saveTabs(userId: number, tabs: Tab[], activeTabId: number | null) {
+  localStorage.setItem(storageKey(userId), JSON.stringify({ tabs, activeTabId }));
+}
+
+export function TabProvider({ userId, children }: { userId: number; children: ReactNode }) {
+  const initial = useRef(loadTabs(userId));
+  const [tabs, setTabs] = useState<Tab[]>(initial.current.tabs);
+  const [activeTabId, setActiveTabId] = useState<number | null>(initial.current.activeTabId);
+
+  useEffect(() => {
+    saveTabs(userId, tabs, activeTabId);
+  }, [userId, tabs, activeTabId]);
 
   const openTab = useCallback((patient: { id: number; firstName: string; lastName: string }) => {
     setTabs((prev) => {

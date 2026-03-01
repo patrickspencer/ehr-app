@@ -22,7 +22,7 @@ function AuthGate({ children }: { children: ReactNode }) {
   }
 
   return (
-    <TabProvider>
+    <TabProvider key={user.id} userId={user.id}>
       <Navbar />
       <main>{children}</main>
     </TabProvider>
