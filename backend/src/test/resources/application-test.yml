@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/ehr
+    username: ehr
+    password: ehr
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    enabled: true
+
+fhir:
+  server:
+    url: http://localhost:8092/fhir
+
+server:
+  port: 0
+  error:
+    include-message: always
