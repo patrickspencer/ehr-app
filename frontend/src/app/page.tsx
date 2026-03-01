@@ -17,7 +17,7 @@ export default function Home() {
 
   return (
     <div>
-      <TabBar />
+      <TabBar onHomeClick={() => setShowFinder(false)} />
       {activeTabId !== null ? (
         <PatientWorkspace key={activeTabId} patientId={activeTabId} />
       ) : showFinder ? (

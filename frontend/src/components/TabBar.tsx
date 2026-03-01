@@ -3,17 +3,15 @@
 import { useState } from "react";
 import { useTabs } from "@/contexts/TabContext";
 
-export default function TabBar() {
+export default function TabBar({ onHomeClick }: { onHomeClick?: () => void }) {
   const { tabs, activeTabId, setActiveTab, closeTab } = useTabs();
   const [confirmClose, setConfirmClose] = useState<number | null>(null);
-
-  if (tabs.length === 0) return null;
 
   return (
     <>
       <div className="flex items-center border-b border-gray-200 bg-gray-50 px-4">
         <button
-          onClick={() => setActiveTab(null)}
+          onClick={() => { setActiveTab(null); onHomeClick?.(); }}
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-t-lg transition-colors ${
             activeTabId === null
               ? "bg-white text-slate-600 border-b-2 border-slate-600"
