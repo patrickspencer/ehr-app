@@ -154,7 +154,7 @@ export default function PatientWorkspace({ patientId }: PatientWorkspaceProps) {
 
   if (loading) {
     return (
-      <div className="flex h-[calc(100vh-7rem)]">
+      <div className="flex h-[calc(100vh-5rem)]">
         <div className="flex flex-1 items-center justify-center">
           <p className="text-gray-500">Loading...</p>
         </div>
@@ -164,7 +164,7 @@ export default function PatientWorkspace({ patientId }: PatientWorkspaceProps) {
 
   if (!patient) {
     return (
-      <div className="flex h-[calc(100vh-7rem)]">
+      <div className="flex h-[calc(100vh-5rem)]">
         <div className="flex flex-1 items-center justify-center">
           <p className="text-red-500">Patient not found.</p>
         </div>
@@ -173,13 +173,13 @@ export default function PatientWorkspace({ patientId }: PatientWorkspaceProps) {
   }
 
   return (
-    <div className="flex h-[calc(100vh-7rem)]">
+    <div className="flex h-[calc(100vh-5rem)]">
       <PatientSidebar
         activeSection={viewToSection(view)}
         onNavigate={handleSidebarNavigate}
         patientName={`${patient.firstName} ${patient.lastName}`}
       />
-      <div className="flex-1 overflow-y-auto p-8">
+      <div className="flex-1 overflow-y-auto px-6 py-6">
         <WorkspaceContent
           view={view}
           setView={setView}

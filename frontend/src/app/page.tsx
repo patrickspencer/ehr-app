@@ -16,9 +16,7 @@ export default function Home() {
           <PatientFinder />
         </div>
       ) : (
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <PatientWorkspace key={activeTabId} patientId={activeTabId} />
-        </div>
+        <PatientWorkspace key={activeTabId} patientId={activeTabId} />
       )}
     </div>
   );

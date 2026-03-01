@@ -44,17 +44,17 @@ export type { SidebarSection };
 
 export default function PatientSidebar({ activeSection, onNavigate, patientName }: PatientSidebarProps) {
   return (
-    <aside className="w-56 shrink-0 border-r border-gray-200 bg-gray-50">
-      <div className="border-b border-gray-200 px-4 py-4">
+    <aside className="w-48 shrink-0 border-r border-gray-200 bg-gray-50">
+      <div className="border-b border-gray-200 px-3 py-3">
         <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Patient</p>
         <p className="mt-1 truncate text-sm font-semibold text-gray-900">{patientName}</p>
       </div>
-      <nav className="p-2">
+      <nav className="p-1.5">
         {navItems.map((item) => (
           <button
             key={item.key}
             onClick={() => onNavigate(item.key)}
-            className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+            className={`flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm font-medium transition-colors ${
               activeSection === item.key
                 ? "bg-teal-50 text-teal-700"
                 : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
