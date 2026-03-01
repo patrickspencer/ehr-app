@@ -28,6 +28,12 @@ dependencies {
 	implementation("org.flywaydb:flyway-core")
 	implementation("org.flywaydb:flyway-database-postgresql")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
+
+	// HAPI FHIR
+	implementation("ca.uhn.hapi.fhir:hapi-fhir-base:7.6.0")
+	implementation("ca.uhn.hapi.fhir:hapi-fhir-client:7.6.0")
+	implementation("ca.uhn.hapi.fhir:hapi-fhir-structures-r4:7.6.0")
+
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("org.postgresql:postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")

@@ -10,6 +10,23 @@ services:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./docker/init-hapi-db.sql:/docker-entrypoint-initdb.d/init-hapi-db.sql
+
+  hapi-fhir:
+    image: hapiproject/hapi:v7.6.0
+    container_name: ehr-hapi-fhir
+    ports:
+      - "8092:8080"
+    environment:
+      spring.datasource.url: jdbc:postgresql://postgres:5432/hapi
+      spring.datasource.username: ehr
+      spring.datasource.password: ehr
+      spring.datasource.driverClassName: org.postgresql.Driver
+      spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+      hapi.fhir.allow_multiple_delete: "true"
+      hapi.fhir.allow_external_references: "true"
+    depends_on:
+      - postgres
 
 volumes:
   pgdata:

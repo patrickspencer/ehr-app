@@ -17,6 +17,10 @@ spring:
     serialization:
       write-dates-as-timestamps: false
 
+fhir:
+  server:
+    url: ${FHIR_SERVER_URL:http://localhost:8092/fhir}
+
 server:
   port: ${SERVER_PORT:8091}
   error:

@@ -7,12 +7,26 @@ cd "$(dirname "$0")"
 BACKEND_PORT="${BACKEND_PORT:-8091}"
 FRONTEND_PORT="${FRONTEND_PORT:-3001}"
 
-# Start Postgres if not running
+# Start Docker services if not running
 if ! docker compose ps --status running 2>/dev/null | grep -q postgres; then
-  echo "Starting Postgres..."
+  echo "Starting Postgres and HAPI FHIR..."
   docker compose up -d
   sleep 2
 fi
+
+# Wait for HAPI FHIR to be ready
+echo "Waiting for HAPI FHIR server..."
+for i in $(seq 1 60); do
+  if curl -s http://localhost:8092/fhir/metadata >/dev/null 2>&1; then
+    echo "HAPI FHIR is ready."
+    break
+  fi
+  if [ "$i" -eq 60 ]; then
+    echo "HAPI FHIR did not start in time."
+    exit 1
+  fi
+  sleep 2
+done
 
 # Start backend
 echo "Starting backend on :$BACKEND_PORT..."
