@@ -1,4 +1,4 @@
-import { Patient, PatientCreateRequest, Note, NoteCreateRequest, Encounter, EncounterCreateRequest, Icd10Code, CptCode } from "@/types";
+import { User, Patient, PatientCreateRequest, Note, NoteCreateRequest, Encounter, EncounterCreateRequest, Icd10Code, CptCode } from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8091";
 
@@ -13,6 +13,18 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   if (res.status === 204) return undefined as T;
   return res.json();
 }
+
+// Users
+
+export function getUsers(): Promise<User[]> {
+  return request<User[]>("/api/users");
+}
+
+export function getUser(id: number): Promise<User> {
+  return request<User>(`/api/users/${id}`);
+}
+
+// Patients
 
 export function getPatients(query?: string): Promise<Patient[]> {
   const params = query ? `?q=${encodeURIComponent(query)}` : "";

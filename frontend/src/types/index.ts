@@ -1,3 +1,14 @@
+export interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  role: string;
+  title: string | null;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Patient {
   id: number;
   firstName: string;
