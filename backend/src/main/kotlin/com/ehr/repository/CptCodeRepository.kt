@@ -9,4 +9,6 @@ interface CptCodeRepository : JpaRepository<CptCode, Long> {
 
     @Query("SELECT c FROM CptCode c WHERE LOWER(c.code) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(c.description) LIKE LOWER(CONCAT('%', :query, '%'))")
     fun search(@Param("query") query: String): List<CptCode>
+
+    fun findByCode(code: String): CptCode?
 }
