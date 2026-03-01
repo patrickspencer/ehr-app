@@ -1,6 +1,7 @@
 # Backend
 backend/build/
 backend/.gradle/
+backend/.next/
 backend/bin/
 backend/out/
 *.class
@@ -19,6 +20,9 @@ frontend/out/
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude Code
+.claude/settings.local.json
 
 # Environment
 .env
