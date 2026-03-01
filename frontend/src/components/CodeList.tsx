@@ -24,7 +24,7 @@ export default function CodeList({ codes, onRemove, emptyMessage = "None assigne
           key={code.id}
           className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-sm"
         >
-          <span className="font-mono font-medium text-teal-700">{code.code}</span>
+          <span className="font-mono font-medium text-slate-700">{code.code}</span>
           <span className="text-gray-600">{code.description}</span>
           {onRemove && (
             <button

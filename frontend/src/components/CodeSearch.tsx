@@ -74,7 +74,7 @@ export default function CodeSearch({ label, placeholder, searchFn, onSelect, exc
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => results.length > 0 && setOpen(true)}
         placeholder={placeholder || `Search ${label.toLowerCase()}...`}
-        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-slate-500 focus:ring-1 focus:ring-slate-500 focus:outline-none"
       />
       {loading && (
         <div className="absolute right-3 top-[2.1rem] text-xs text-gray-400">Searching...</div>
@@ -86,9 +86,9 @@ export default function CodeSearch({ label, placeholder, searchFn, onSelect, exc
               <button
                 type="button"
                 onClick={() => handleSelect(code)}
-                className="w-full px-3 py-2 text-left text-sm hover:bg-teal-50 flex items-center gap-2"
+                className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2"
               >
-                <span className="font-mono font-medium text-teal-700">{code.code}</span>
+                <span className="font-mono font-medium text-slate-700">{code.code}</span>
                 <span className="text-gray-600 truncate">{code.description}</span>
               </button>
             </li>

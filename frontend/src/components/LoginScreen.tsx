@@ -12,7 +12,7 @@ const roleLabels: Record<string, string> = {
 };
 
 const roleColors: Record<string, string> = {
-  DOCTOR: "bg-teal-100 text-teal-800",
+  DOCTOR: "bg-slate-100 text-slate-800",
   NURSE: "bg-blue-100 text-blue-800",
   OFFICE: "bg-amber-100 text-amber-800",
 };
@@ -56,7 +56,7 @@ export default function LoginScreen() {
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="w-full max-w-2xl px-4">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-teal-700">EHR</h1>
+          <h1 className="text-3xl font-bold text-slate-700">EHR</h1>
           <p className="mt-1 text-sm text-gray-500">Select a user to sign in</p>
         </div>
 
@@ -77,7 +77,7 @@ export default function LoginScreen() {
                       <button
                         key={u.id}
                         onClick={() => login(u)}
-                        className="flex items-center gap-4 rounded-lg border border-gray-200 bg-white p-4 text-left shadow-sm transition-all hover:border-teal-300 hover:shadow-md"
+                        className="flex items-center gap-4 rounded-lg border border-gray-200 bg-white p-4 text-left shadow-sm transition-all hover:border-slate-300 hover:shadow-md"
                       >
                         <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${roleColors[u.role]}`}>
                           {roleIcons[u.role]}

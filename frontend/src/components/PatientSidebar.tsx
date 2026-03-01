@@ -56,7 +56,7 @@ export default function PatientSidebar({ activeSection, onNavigate, patientName 
             onClick={() => onNavigate(item.key)}
             className={`flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm font-medium transition-colors ${
               activeSection === item.key
-                ? "bg-teal-50 text-teal-700"
+                ? "bg-slate-50 text-slate-700"
                 : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
             }`}
           >

@@ -59,7 +59,7 @@ export default function PatientTable({ patients, onDelete }: PatientTableProps) 
                       e.stopPropagation();
                       openTab(patient);
                     }}
-                    className="text-teal-600 hover:text-teal-800 font-medium"
+                    className="text-slate-600 hover:text-slate-800 font-medium"
                   >
                     View
                   </button>

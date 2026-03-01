@@ -110,7 +110,7 @@ export default function EncounterDetailPage() {
       <div className="rounded-lg border border-gray-200 bg-white p-6">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <Link href={`/patients/${patientId}`} className="text-sm text-teal-600 hover:text-teal-800">
+            <Link href={`/patients/${patientId}`} className="text-sm text-slate-600 hover:text-slate-800">
               &larr; Back to Patient
             </Link>
             <h1 className="mt-1 text-2xl font-bold text-gray-900">
@@ -120,7 +120,7 @@ export default function EncounterDetailPage() {
           <div className="flex gap-3">
             <Link
               href={`/patients/${patientId}/encounters/${encounterId}/edit`}
-              className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 transition-colors"
+              className="rounded-lg bg-slate-600 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors"
             >
               Edit
             </Link>

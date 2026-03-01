@@ -307,7 +307,7 @@ function WorkspaceContent({
           <h1 className="text-2xl font-bold text-gray-900">Encounters</h1>
           <button
             onClick={() => setView({ type: "newEncounter" })}
-            className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 transition-colors"
+            className="rounded-lg bg-slate-600 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors"
           >
             New Encounter
           </button>
@@ -350,7 +350,7 @@ function WorkspaceContent({
           <div className="flex gap-3">
             <button
               onClick={() => setView({ type: "editPatient" })}
-              className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 transition-colors"
+              className="rounded-lg bg-slate-600 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors"
             >
               Edit
             </button>
@@ -392,7 +392,7 @@ function WorkspaceContent({
           <h2 className="text-xl font-bold text-gray-900">Recent Encounters</h2>
           <button
             onClick={() => setView({ type: "encounters" })}
-            className="text-sm font-medium text-teal-600 hover:text-teal-800"
+            className="text-sm font-medium text-slate-600 hover:text-slate-800"
           >
             View all
           </button>
@@ -499,7 +499,7 @@ function EncounterDetailView({
       <div className="rounded-lg border border-gray-200 bg-white p-6">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <button onClick={onBack} className="text-sm text-teal-600 hover:text-teal-800">
+            <button onClick={onBack} className="text-sm text-slate-600 hover:text-slate-800">
               &larr; Back to Encounters
             </button>
             <h1 className="mt-1 text-2xl font-bold text-gray-900">
@@ -509,7 +509,7 @@ function EncounterDetailView({
           <div className="flex gap-3">
             <button
               onClick={onEdit}
-              className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 transition-colors"
+              className="rounded-lg bg-slate-600 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors"
             >
               Edit
             </button>

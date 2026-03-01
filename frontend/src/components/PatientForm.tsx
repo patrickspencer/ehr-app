@@ -50,7 +50,7 @@ export default function PatientForm({ initialData, onSubmit, submitLabel, onCanc
             required
             value={form.firstName}
             onChange={(e) => update("firstName", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-slate-500 focus:ring-1 focus:ring-slate-500 focus:outline-none"
           />
         </div>
         <div>
@@ -60,7 +60,7 @@ export default function PatientForm({ initialData, onSubmit, submitLabel, onCanc
             required
             value={form.lastName}
             onChange={(e) => update("lastName", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-slate-500 focus:ring-1 focus:ring-slate-500 focus:outline-none"
           />
         </div>
         <div>
@@ -70,7 +70,7 @@ export default function PatientForm({ initialData, onSubmit, submitLabel, onCanc
             required
             value={form.dateOfBirth}
             onChange={(e) => update("dateOfBirth", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-slate-500 focus:ring-1 focus:ring-slate-500 focus:outline-none"
           />
         </div>
         <div>
@@ -79,7 +79,7 @@ export default function PatientForm({ initialData, onSubmit, submitLabel, onCanc
             required
             value={form.gender}
             onChange={(e) => update("gender", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-slate-500 focus:ring-1 focus:ring-slate-500 focus:outline-none"
           >
             <option value="">Select gender</option>
             <option value="Male">Male</option>
@@ -93,7 +93,7 @@ export default function PatientForm({ initialData, onSubmit, submitLabel, onCanc
             type="tel"
             value={form.phone}
             onChange={(e) => update("phone", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-slate-500 focus:ring-1 focus:ring-slate-500 focus:outline-none"
           />
         </div>
         <div>
@@ -102,7 +102,7 @@ export default function PatientForm({ initialData, onSubmit, submitLabel, onCanc
             type="email"
             value={form.email}
             onChange={(e) => update("email", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-slate-500 focus:ring-1 focus:ring-slate-500 focus:outline-none"
           />
         </div>
       </div>
@@ -112,14 +112,14 @@ export default function PatientForm({ initialData, onSubmit, submitLabel, onCanc
           rows={3}
           value={form.address}
           onChange={(e) => update("address", e.target.value)}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-slate-500 focus:ring-1 focus:ring-slate-500 focus:outline-none"
         />
       </div>
       <div className="flex gap-3">
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-teal-700 transition-colors disabled:opacity-50"
+          className="rounded-lg bg-slate-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-700 transition-colors disabled:opacity-50"
         >
           {submitting ? "Saving..." : submitLabel}
         </button>

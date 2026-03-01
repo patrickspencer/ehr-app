@@ -60,7 +60,7 @@ export default function PatientDetailPage() {
           <div className="flex gap-3">
             <Link
               href={`/patients/${id}/edit`}
-              className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 transition-colors"
+              className="rounded-lg bg-slate-600 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors"
             >
               Edit
             </Link>
@@ -102,7 +102,7 @@ export default function PatientDetailPage() {
           <h2 className="text-xl font-bold text-gray-900">Encounters</h2>
           <Link
             href={`/patients/${id}/encounters/new`}
-            className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 transition-colors"
+            className="rounded-lg bg-slate-600 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors"
           >
             New Encounter
           </Link>

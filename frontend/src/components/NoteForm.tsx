@@ -36,7 +36,7 @@ export default function NoteForm({ onSubmit }: NoteFormProps) {
           value={author}
           onChange={(e) => setAuthor(e.target.value)}
           placeholder="Your name"
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-slate-500 focus:ring-1 focus:ring-slate-500 focus:outline-none"
         />
       </div>
       <div>
@@ -47,13 +47,13 @@ export default function NoteForm({ onSubmit }: NoteFormProps) {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Enter clinical note..."
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-slate-500 focus:ring-1 focus:ring-slate-500 focus:outline-none"
         />
       </div>
       <button
         type="submit"
         disabled={submitting}
-        className="rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-teal-700 transition-colors disabled:opacity-50"
+        className="rounded-lg bg-slate-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-700 transition-colors disabled:opacity-50"
       >
         {submitting ? "Adding..." : "Add Note"}
       </button>

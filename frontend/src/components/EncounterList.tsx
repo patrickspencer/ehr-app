@@ -65,14 +65,14 @@ export default function EncounterList({ encounters, patientId, onView }: Encount
                 {onView ? (
                   <button
                     onClick={() => onView(enc.id)}
-                    className="text-sm font-medium text-teal-600 hover:text-teal-800"
+                    className="text-sm font-medium text-slate-600 hover:text-slate-800"
                   >
                     View
                   </button>
                 ) : (
                   <Link
                     href={`/patients/${patientId}/encounters/${enc.id}`}
-                    className="text-sm font-medium text-teal-600 hover:text-teal-800"
+                    className="text-sm font-medium text-slate-600 hover:text-slate-800"
                   >
                     View
                   </Link>
