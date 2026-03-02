@@ -4,6 +4,10 @@ A full-stack electronic health records application built with Spring Boot (Kotli
 
 **This project is for demonstration purposes only and is not intended for production clinical use.** All patient data in this repository is synthetically generated and does not represent real individuals.
 
+## Documentation
+
+[Read the Docs](https://ehr-app.readthedocs.io)
+
 ## License
 
 This software is proprietary. All rights reserved. See [LICENSE](LICENSE) for details.
