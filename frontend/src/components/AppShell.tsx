@@ -25,6 +25,9 @@ function AuthGate({ children }: { children: ReactNode }) {
     <TabProvider key={user.id} userId={user.id}>
       <Navbar />
       <main>{children}</main>
+      <div className="fixed bottom-2 left-3 text-[10px] text-gray-400">
+        v0.1.0
+      </div>
     </TabProvider>
   );
 }
