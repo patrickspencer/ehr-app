@@ -1,0 +1,65 @@
+services:
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ehr
+      POSTGRES_USER: ehr
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ehr}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/init-hapi-db.sql:/docker-entrypoint-initdb.d/init-hapi-db.sql
+
+  hapi-fhir:
+    image: hapiproject/hapi:v7.6.0
+    restart: unless-stopped
+    environment:
+      spring.datasource.url: jdbc:postgresql://postgres:5432/hapi
+      spring.datasource.username: ehr
+      spring.datasource.password: ${POSTGRES_PASSWORD:-ehr}
+      spring.datasource.driverClassName: org.postgresql.Driver
+      spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+      hapi.fhir.allow_multiple_delete: "true"
+      hapi.fhir.allow_external_references: "true"
+    depends_on:
+      - postgres
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ehr
+      SPRING_DATASOURCE_USERNAME: ehr
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-ehr}
+      FHIR_SERVER_URL: http://hapi-fhir:8080/fhir
+      SERVER_PORT: "8091"
+    depends_on:
+      - postgres
+      - hapi-fhir
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    environment:
+      HOSTNAME: "0.0.0.0"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

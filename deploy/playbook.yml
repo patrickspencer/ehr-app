@@ -1,0 +1,106 @@
+---
+- name: Deploy EHR App
+  hosts: droplet
+  become: true
+  vars:
+    app_dir: /opt/ehr-app
+    repo_url: "{{ lookup('env', 'REPO_URL') | default('https://github.com/YOUR_USER/ehr-app.git', true) }}"
+    repo_branch: main
+    domain: "{{ lookup('env', 'DOMAIN') | default('localhost', true) }}"
+    swap_size: 2G
+
+  tasks:
+    # --- Swap ---
+    - name: Check if swap file exists
+      stat:
+        path: /swapfile
+      register: swap_file
+
+    - name: Create swap file
+      command: fallocate -l {{ swap_size }} /swapfile
+      when: not swap_file.stat.exists
+
+    - name: Set swap file permissions
+      file:
+        path: /swapfile
+        mode: "0600"
+      when: not swap_file.stat.exists
+
+    - name: Make swap
+      command: mkswap /swapfile
+      when: not swap_file.stat.exists
+
+    - name: Enable swap
+      command: swapon /swapfile
+      when: not swap_file.stat.exists
+
+    - name: Add swap to fstab
+      lineinfile:
+        path: /etc/fstab
+        line: "/swapfile none swap sw 0 0"
+        state: present
+
+    # --- Docker ---
+    - name: Install prerequisites
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+        update_cache: true
+
+    - name: Add Docker GPG key
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: "0644"
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+
+    - name: Install Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
+        update_cache: true
+
+    - name: Start and enable Docker
+      systemd:
+        name: docker
+        state: started
+        enabled: true
+
+    # --- App ---
+    - name: Clone or update repo
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_dir }}"
+        version: "{{ repo_branch }}"
+        force: true
+
+    - name: Create .env file
+      copy:
+        dest: "{{ app_dir }}/.env"
+        content: |
+          DOMAIN={{ domain }}
+          POSTGRES_PASSWORD={{ lookup('env', 'POSTGRES_PASSWORD') | default('ehr', true) }}
+        mode: "0600"
+
+    - name: Build and start containers
+      community.docker.docker_compose_v2:
+        project_src: "{{ app_dir }}"
+        files:
+          - docker-compose.prod.yml
+        build: always
+        state: present
+      environment:
+        COMPOSE_BAKE: "true"
