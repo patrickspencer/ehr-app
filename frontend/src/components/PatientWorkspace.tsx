@@ -365,92 +365,114 @@ function WorkspaceContent({
       {/* Card Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Demographics */}
-        <div className="rounded-lg border border-gray-200 bg-white p-5">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">Demographics</h2>
-          <dl className="grid grid-cols-2 gap-4">
-            <div>
-              <dt className="text-xs text-gray-500">Date of Birth</dt>
-              <dd className="mt-0.5 text-sm text-gray-900">{patient.dateOfBirth}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-gray-500">Gender</dt>
-              <dd className="mt-0.5 text-sm text-gray-900">{patient.gender}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-gray-500">Phone</dt>
-              <dd className="mt-0.5 text-sm text-gray-900">{patient.phone || "N/A"}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-gray-500">Email</dt>
-              <dd className="mt-0.5 text-sm text-gray-900">{patient.email || "N/A"}</dd>
-            </div>
-            <div className="col-span-2">
-              <dt className="text-xs text-gray-500">Address</dt>
-              <dd className="mt-0.5 text-sm text-gray-900">{patient.address || "N/A"}</dd>
-            </div>
-          </dl>
+        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <div className="bg-slate-100 px-5 py-3 border-b border-slate-200">
+            <h2 className="text-sm font-semibold tracking-wide text-slate-700">Patient Demographics</h2>
+          </div>
+          <div className="p-5">
+            <dl className="grid grid-cols-2 gap-4">
+              <div>
+                <dt className="text-xs text-gray-500">Date of Birth</dt>
+                <dd className="mt-0.5 text-sm text-gray-900">{patient.dateOfBirth}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-gray-500">Gender</dt>
+                <dd className="mt-0.5 text-sm text-gray-900">{patient.gender}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-gray-500">Phone</dt>
+                <dd className="mt-0.5 text-sm text-gray-900">{patient.phone || "N/A"}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-gray-500">Email</dt>
+                <dd className="mt-0.5 text-sm text-gray-900">{patient.email || "N/A"}</dd>
+              </div>
+              <div className="col-span-2">
+                <dt className="text-xs text-gray-500">Address</dt>
+                <dd className="mt-0.5 text-sm text-gray-900">{patient.address || "N/A"}</dd>
+              </div>
+            </dl>
+          </div>
         </div>
 
         {/* Recent Encounters */}
-        <div className="rounded-lg border border-gray-200 bg-white p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Recent Encounters</h2>
+        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <div className="flex items-center justify-between bg-blue-50 px-5 py-3 border-b border-blue-200">
+            <h2 className="text-sm font-semibold tracking-wide text-blue-800">Recent Encounters</h2>
             <button
               onClick={() => setView({ type: "encounters" })}
-              className="text-xs font-medium text-slate-600 hover:text-slate-800"
+              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors"
             >
               View all
             </button>
           </div>
-          {encounters.length === 0 ? (
-            <p className="text-sm text-gray-400">No encounters yet.</p>
-          ) : (
-            <EncounterList
-              encounters={encounters.slice(0, 3)}
-              patientId={patientId}
-              onView={onViewEncounter}
-              compact
-            />
-          )}
+          <div className="p-5">
+            {encounters.length === 0 ? (
+              <p className="text-sm text-gray-400">No encounters yet.</p>
+            ) : (
+              <EncounterList
+                encounters={encounters.slice(0, 3)}
+                patientId={patientId}
+                onView={onViewEncounter}
+                compact
+              />
+            )}
+          </div>
         </div>
 
         {/* Allergies */}
-        <div className="rounded-lg border border-gray-200 bg-white p-5">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">Allergies</h2>
-          <p className="text-sm text-gray-400">No known allergies.</p>
-          <span className="mt-3 inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500 uppercase">
-            Coming soon
-          </span>
+        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <div className="flex items-center justify-between bg-amber-50 px-5 py-3 border-b border-amber-200">
+            <h2 className="text-sm font-semibold tracking-wide text-amber-800">Allergies</h2>
+            <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-medium text-amber-700 uppercase">
+              Coming soon
+            </span>
+          </div>
+          <div className="p-5">
+            <p className="text-sm text-gray-400">No known allergies.</p>
+          </div>
         </div>
 
         {/* Medications */}
-        <div className="rounded-lg border border-gray-200 bg-white p-5">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">Medications</h2>
-          <p className="text-sm text-gray-400">No active medications.</p>
-          <span className="mt-3 inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500 uppercase">
-            Coming soon
-          </span>
+        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <div className="flex items-center justify-between bg-emerald-50 px-5 py-3 border-b border-emerald-200">
+            <h2 className="text-sm font-semibold tracking-wide text-emerald-800">Medications</h2>
+            <span className="rounded-full bg-emerald-200 px-2 py-0.5 text-[10px] font-medium text-emerald-700 uppercase">
+              Coming soon
+            </span>
+          </div>
+          <div className="p-5">
+            <p className="text-sm text-gray-400">No active medications.</p>
+          </div>
         </div>
 
         {/* Prescriptions */}
-        <div className="rounded-lg border border-gray-200 bg-white p-5">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">Prescriptions</h2>
-          <p className="text-sm text-gray-400">No active prescriptions.</p>
-          <span className="mt-3 inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500 uppercase">
-            Coming soon
-          </span>
+        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <div className="flex items-center justify-between bg-violet-50 px-5 py-3 border-b border-violet-200">
+            <h2 className="text-sm font-semibold tracking-wide text-violet-800">Prescriptions</h2>
+            <span className="rounded-full bg-violet-200 px-2 py-0.5 text-[10px] font-medium text-violet-700 uppercase">
+              Coming soon
+            </span>
+          </div>
+          <div className="p-5">
+            <p className="text-sm text-gray-400">No active prescriptions.</p>
+          </div>
         </div>
 
         {/* Clinical Notes */}
-        <div className="rounded-lg border border-gray-200 bg-white p-5">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">Clinical Notes</h2>
-          {notes.filter((n) => !n.encounterId).length === 0 ? (
-            <p className="text-sm text-gray-400">No notes yet.</p>
-          ) : (
-            <NoteList notes={notes.filter((n) => !n.encounterId)} />
-          )}
-          <div className="mt-4 border-t border-gray-100 pt-4">
-            <NoteForm onSubmit={onAddNote} />
+        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <div className="bg-cyan-50 px-5 py-3 border-b border-cyan-200">
+            <h2 className="text-sm font-semibold tracking-wide text-cyan-800">Clinical Notes</h2>
+          </div>
+          <div className="p-5">
+            {notes.filter((n) => !n.encounterId).length === 0 ? (
+              <p className="text-sm text-gray-400">No notes yet.</p>
+            ) : (
+              <NoteList notes={notes.filter((n) => !n.encounterId)} />
+            )}
+            <div className="mt-4 border-t border-gray-100 pt-4">
+              <NoteForm onSubmit={onAddNote} />
+            </div>
           </div>
         </div>
       </div>
