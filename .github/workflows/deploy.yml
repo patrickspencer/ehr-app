@@ -1,0 +1,66 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REGISTRY: registry.digitalocean.com/ehr-app
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Log in to DOCR
+        run: doctl registry login --expiry-seconds 1200
+
+      - name: Build and push backend
+        run: |
+          docker build \
+            -t $REGISTRY/backend:latest \
+            -t $REGISTRY/backend:${{ github.sha }} \
+            ./backend
+          docker push $REGISTRY/backend:latest
+          docker push $REGISTRY/backend:${{ github.sha }}
+
+      - name: Build and push frontend
+        run: |
+          docker build \
+            -t $REGISTRY/frontend:latest \
+            -t $REGISTRY/frontend:${{ github.sha }} \
+            ./frontend
+          docker push $REGISTRY/frontend:latest
+          docker push $REGISTRY/frontend:${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to droplet
+        uses: appleboy/ssh-action@v1
+        env:
+          DIGITALOCEAN_ACCESS_TOKEN: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+        with:
+          host: <DEPLOY_HOST>
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: DIGITALOCEAN_ACCESS_TOKEN
+          script: |
+            # Authenticate Docker to DOCR
+            if ! command -v doctl &> /dev/null; then
+              curl -sL https://github.com/digitalocean/doctl/releases/download/v1.104.0/doctl-1.104.0-linux-amd64.tar.gz | tar -xz -C /usr/local/bin
+            fi
+            doctl auth init --access-token $DIGITALOCEAN_ACCESS_TOKEN
+            doctl registry login --expiry-seconds 1200
+            # Deploy
+            cd /opt/ehr-app
+            git pull origin main
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d

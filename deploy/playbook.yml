@@ -7,6 +7,7 @@
     repo_url: "{{ lookup('env', 'REPO_URL') | default('https://github.com/patrickspencer/ehr-app.git', true) }}"
     repo_branch: main
     domain: "{{ lookup('env', 'DOMAIN') | default('localhost', true) }}"
+    do_token: "{{ lookup('env', 'DIGITALOCEAN_ACCESS_TOKEN') }}"
     swap_size: 2G
 
   tasks:
@@ -79,6 +80,24 @@
         state: started
         enabled: true
 
+    # --- Container Registry ---
+    - name: Install doctl
+      ansible.builtin.get_url:
+        url: https://github.com/digitalocean/doctl/releases/download/v1.104.0/doctl-1.104.0-linux-amd64.tar.gz
+        dest: /tmp/doctl.tar.gz
+
+    - name: Extract doctl
+      ansible.builtin.unarchive:
+        src: /tmp/doctl.tar.gz
+        dest: /usr/local/bin
+        remote_src: true
+
+    - name: Authenticate doctl
+      command: doctl auth init --access-token {{ do_token }}
+
+    - name: Log in to DOCR
+      command: doctl registry login --expiry-seconds 3600
+
     # --- App ---
     - name: Clone or update repo
       git:
@@ -95,12 +114,10 @@
           POSTGRES_PASSWORD={{ lookup('env', 'POSTGRES_PASSWORD') | default('ehr', true) }}
         mode: "0600"
 
-    - name: Build and start containers
+    - name: Pull and start containers
       community.docker.docker_compose_v2:
         project_src: "{{ app_dir }}"
         files:
           - docker-compose.prod.yml
-        build: always
+        pull: always
         state: present
-      environment:
-        COMPOSE_BAKE: "true"
