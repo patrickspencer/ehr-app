@@ -140,3 +140,22 @@ export function removeProcedure(patientId: number, encounterId: number, codeId: 
     method: "DELETE",
   });
 }
+
+// User tab state
+
+interface TabStateResponse {
+  userId: number;
+  tabState: string;
+  updatedAt: string;
+}
+
+export function getUserTabs(userId: number): Promise<TabStateResponse> {
+  return request<TabStateResponse>(`/api/users/${userId}/tabs`);
+}
+
+export function saveUserTabs(userId: number, tabState: string): Promise<TabStateResponse> {
+  return request<TabStateResponse>(`/api/users/${userId}/tabs`, {
+    method: "PUT",
+    body: JSON.stringify({ tabState }),
+  });
+}

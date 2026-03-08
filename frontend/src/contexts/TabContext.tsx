@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useCallback, useEffect, useRef } from "react";
+import { getUserTabs, saveUserTabs } from "@/lib/api";
 
 export interface Tab {
   patientId: number;
@@ -42,9 +43,41 @@ export function TabProvider({ userId, children }: { userId: number; children: Re
   const initial = useRef(loadTabs(userId));
   const [tabs, setTabs] = useState<Tab[]>(initial.current.tabs);
   const [activeTabId, setActiveTabId] = useState<number | null>(initial.current.activeTabId);
+  const isMounted = useRef(true);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    return () => { isMounted.current = false; };
+  }, []);
+
+  // Load from backend on mount, overwrite if backend has data
+  useEffect(() => {
+    getUserTabs(userId).then((res) => {
+      if (!isMounted.current) return;
+      try {
+        const parsed = JSON.parse(res.tabState);
+        if (Array.isArray(parsed.tabs) && parsed.tabs.length > 0) {
+          setTabs(parsed.tabs);
+          setActiveTabId(parsed.activeTabId ?? null);
+          saveTabs(userId, parsed.tabs, parsed.activeTabId ?? null);
+        }
+      } catch { /* ignore */ }
+    }).catch(() => { /* silent — fall back to localStorage */ });
+  }, [userId]);
+
+  // Save to localStorage immediately + debounce-save to backend
+  useEffect(() => {
     saveTabs(userId, tabs, activeTabId);
+
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      const tabState = JSON.stringify({ tabs, activeTabId });
+      saveUserTabs(userId, tabState).catch(() => { /* silent */ });
+    }, 300);
+
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
   }, [userId, tabs, activeTabId]);
 
   const openTab = useCallback((patient: { id: number; firstName: string; lastName: string }) => {

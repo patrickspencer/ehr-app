@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.ehr"
-version = "0.0.1-SNAPSHOT"
+version = "0.1.1-SNAPSHOT"
 description = "Demo project for Spring Boot"
 
 java {
