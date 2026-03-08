@@ -30,3 +30,4 @@ docs/_build/
 # Environment
 .env
 .env.local
+!frontend/.env
