@@ -1,13 +1,21 @@
 "use client";
 
 import { ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { TabProvider } from "@/contexts/TabContext";
 import Navbar from "@/components/Navbar";
 import LoginScreen from "@/components/LoginScreen";
 
+const PUBLIC_PATHS = ["/guide"];
+
 function AuthGate({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
+  const pathname = usePathname();
+
+  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
+    return <>{children}</>;
+  }
 
   if (loading) {
     return (

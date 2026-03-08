@@ -58,6 +58,12 @@ export default function LoginScreen() {
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-slate-700">EHR</h1>
           <p className="mt-1 text-sm text-gray-500">Select a user to sign in</p>
+          <a
+            href="/guide"
+            className="mt-2 inline-block text-sm text-slate-500 underline hover:text-slate-700"
+          >
+            Developer Guide
+          </a>
         </div>
 
         {loading ? (

@@ -1,16 +1,28 @@
 # Developer Guide
 
-This guide walks you through setting up the EHR app for local development on Linux (Ubuntu/Debian). It assumes you're starting from scratch.
+This guide walks you through setting up the EHR app for local development. It assumes you're starting from scratch.
 
 ## 1. Install prerequisites
 
-Open a terminal and run:
+You need **Git**, **Java 17**, **Node.js 20**, and **Docker**.
+
+### macOS
 
 ```bash
-# Update packages
-sudo apt update && sudo apt upgrade -y
+# Install Homebrew if you don't have it
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# Install Git, Java 17, Node.js 20, Docker
+# Install prerequisites
+brew install git openjdk@17 node@20
+
+# Docker — install Docker Desktop from https://www.docker.com/products/docker-desktop
+# Then open Docker Desktop and let it finish setup
+```
+
+### Ubuntu / Debian
+
+```bash
+sudo apt update && sudo apt upgrade -y
 sudo apt install -y git curl openjdk-17-jdk
 
 # Node.js 20 via NodeSource
@@ -24,7 +36,15 @@ sudo usermod -aG docker $USER
 
 **Log out and back in** after the Docker step (so the group membership takes effect).
 
-Verify everything:
+### Fedora / RHEL
+
+```bash
+sudo dnf install -y git java-17-openjdk nodejs20 docker
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
+```
+
+### Verify (all platforms)
 
 ```bash
 java --version    # should show 17.x
@@ -35,10 +55,9 @@ docker --version  # should show 27.x
 
 ## 2. Install VS Code + Claude Code
 
-1. Download VS Code from https://code.visualstudio.com/ (grab the `.deb` package)
-2. Install it: `sudo dpkg -i code_*.deb`
-3. Open VS Code, go to Extensions (Ctrl+Shift+X), search for **Claude Code**, and install it
-4. Open the Claude Code panel and sign in with your Anthropic account
+1. Download VS Code from https://code.visualstudio.com/
+2. Open VS Code, go to Extensions (Ctrl+Shift+X / Cmd+Shift+X), search for **Claude Code**, and install it
+3. Open the Claude Code panel and sign in with your Anthropic account
 
 ## 3. Clone the repo
 
