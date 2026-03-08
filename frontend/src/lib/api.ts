@@ -1,6 +1,6 @@
 import { User, Patient, PatientCreateRequest, Note, NoteCreateRequest, Encounter, EncounterCreateRequest, Icd10Code, CptCode } from "@/types";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8091";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8091";
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
