@@ -43,18 +43,14 @@ export function TabProvider({ userId, children }: { userId: number; children: Re
   const initial = useRef(loadTabs(userId));
   const [tabs, setTabs] = useState<Tab[]>(initial.current.tabs);
   const [activeTabId, setActiveTabId] = useState<number | null>(initial.current.activeTabId);
-  const isMounted = useRef(true);
   const backendLoaded = useRef(false);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    return () => { isMounted.current = false; };
-  }, []);
-
   // Load from backend on mount, overwrite if backend has data
   useEffect(() => {
+    let ignore = false;
     getUserTabs(userId).then((res) => {
-      if (!isMounted.current) return;
+      if (ignore) return;
       try {
         const parsed = JSON.parse(res.tabState);
         if (Array.isArray(parsed.tabs) && parsed.tabs.length > 0) {
@@ -64,8 +60,9 @@ export function TabProvider({ userId, children }: { userId: number; children: Re
         }
       } catch { /* ignore */ }
     }).catch(() => { /* silent — fall back to localStorage */ }).finally(() => {
-      backendLoaded.current = true;
+      if (!ignore) backendLoaded.current = true;
     });
+    return () => { ignore = true; };
   }, [userId]);
 
   // Save to localStorage immediately + debounce-save to backend
