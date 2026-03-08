@@ -4,7 +4,7 @@
   become: true
   vars:
     app_dir: /opt/ehr-app
-    repo_url: "{{ lookup('env', 'REPO_URL') | default('https://github.com/YOUR_USER/ehr-app.git', true) }}"
+    repo_url: "{{ lookup('env', 'REPO_URL') | default('https://github.com/patrickspencer/ehr-app.git', true) }}"
     repo_branch: main
     domain: "{{ lookup('env', 'DOMAIN') | default('localhost', true) }}"
     swap_size: 2G
