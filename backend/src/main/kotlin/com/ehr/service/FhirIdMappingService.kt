@@ -2,10 +2,12 @@ package com.ehr.service
 
 import com.ehr.model.FhirIdMapping
 import com.ehr.repository.FhirIdMappingRepository
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Profile("fhir")
 class FhirIdMappingService(private val repository: FhirIdMappingRepository) {
 
     fun getFhirId(resourceType: String, legacyId: Long): String? =

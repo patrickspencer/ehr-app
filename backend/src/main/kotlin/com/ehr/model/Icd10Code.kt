@@ -14,4 +14,12 @@ class Icd10Code(
 
     @Column(nullable = false, length = 255)
     var description: String = ""
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Icd10Code) return false
+        return id != 0L && id == other.id
+    }
+
+    override fun hashCode(): Int = javaClass.hashCode()
+}

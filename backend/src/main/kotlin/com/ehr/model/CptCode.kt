@@ -14,4 +14,12 @@ class CptCode(
 
     @Column(nullable = false, length = 255)
     var description: String = ""
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is CptCode) return false
+        return id != 0L && id == other.id
+    }
+
+    override fun hashCode(): Int = javaClass.hashCode()
+}

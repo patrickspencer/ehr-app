@@ -16,12 +16,13 @@ import org.junit.jupiter.api.MethodOrderer.OrderAnnotation
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDate
 import java.util.concurrent.atomic.AtomicBoolean
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
+@ActiveProfiles("test", "fhir")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(OrderAnnotation::class)
 abstract class BaseIntegrationTest {
@@ -33,22 +34,34 @@ abstract class BaseIntegrationTest {
     @Autowired
     lateinit var rest: TestRestTemplate
 
-    @Autowired
-    lateinit var fhirClient: IGenericClient
+    @Autowired(required = false)
+    var fhirClient: IGenericClient? = null
+
+    @Autowired(required = false)
+    var fhirIdMappingRepository: FhirIdMappingRepository? = null
 
     @Autowired
-    lateinit var fhirIdMappingRepository: FhirIdMappingRepository
+    lateinit var jdbcTemplate: JdbcTemplate
 
     @BeforeAll
-    fun resetFhirData() {
+    fun resetData() {
         if (!initialized.compareAndSet(false, true)) return
 
-        wipeFhirResources("DocumentReference")
-        wipeFhirResources("Procedure")
-        wipeFhirResources("Condition")
-        wipeFhirResources("Encounter")
-        wipeFhirResources("Patient")
-        fhirIdMappingRepository.deleteAll()
+        if (fhirClient != null) {
+            wipeFhirResources("DocumentReference")
+            wipeFhirResources("Procedure")
+            wipeFhirResources("Condition")
+            wipeFhirResources("Encounter")
+            wipeFhirResources("Patient")
+            fhirIdMappingRepository?.deleteAll()
+        } else {
+            jdbcTemplate.execute("DELETE FROM encounter_diagnoses")
+            jdbcTemplate.execute("DELETE FROM encounter_procedures")
+            jdbcTemplate.execute("DELETE FROM notes")
+            jdbcTemplate.execute("DELETE FROM encounters")
+            jdbcTemplate.execute("DELETE FROM patients")
+        }
+
         seedViaApi()
     }
 
@@ -124,7 +137,8 @@ abstract class BaseIntegrationTest {
 
     @Suppress("UNCHECKED_CAST")
     private fun wipeFhirResources(resourceType: String) {
-        var bundle = fhirClient.search<Bundle>()
+        val client = fhirClient ?: return
+        var bundle = client.search<Bundle>()
             .forResource(resourceType)
             .count(200)
             .returnBundle(Bundle::class.java)
@@ -134,12 +148,12 @@ abstract class BaseIntegrationTest {
             for (entry in bundle.entry) {
                 try {
                     val id = entry.resource.idElement
-                    fhirClient.delete().resourceById(id).execute()
+                    client.delete().resourceById(id).execute()
                 } catch (_: Exception) {
                     // Ignore delete failures — resource may have already been deleted
                 }
             }
-            bundle = fhirClient.search<Bundle>()
+            bundle = client.search<Bundle>()
                 .forResource(resourceType)
                 .count(200)
                 .returnBundle(Bundle::class.java)
@@ -147,7 +161,7 @@ abstract class BaseIntegrationTest {
         }
 
         try {
-            fhirClient.operation()
+            client.operation()
                 .onType(resourceType)
                 .named("\$expunge")
                 .withParameter(Parameters::class.java, "expungeDeletedResources", BooleanType(true))
