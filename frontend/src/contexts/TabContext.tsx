@@ -44,6 +44,7 @@ export function TabProvider({ userId, children }: { userId: number; children: Re
   const [tabs, setTabs] = useState<Tab[]>(initial.current.tabs);
   const [activeTabId, setActiveTabId] = useState<number | null>(initial.current.activeTabId);
   const isMounted = useRef(true);
+  const backendLoaded = useRef(false);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -62,12 +63,16 @@ export function TabProvider({ userId, children }: { userId: number; children: Re
           saveTabs(userId, parsed.tabs, parsed.activeTabId ?? null);
         }
       } catch { /* ignore */ }
-    }).catch(() => { /* silent — fall back to localStorage */ });
+    }).catch(() => { /* silent — fall back to localStorage */ }).finally(() => {
+      backendLoaded.current = true;
+    });
   }, [userId]);
 
   // Save to localStorage immediately + debounce-save to backend
   useEffect(() => {
     saveTabs(userId, tabs, activeTabId);
+
+    if (!backendLoaded.current) return;
 
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
