@@ -5,21 +5,19 @@ on:
     branches: [main]
 
 env:
-  REGISTRY: registry.digitalocean.com/ehr-app
+  REGISTRY: ghcr.io/patrickspencer/ehr-app
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install doctl
-        uses: digitalocean/action-doctl@v2
-        with:
-          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
-
-      - name: Log in to DOCR
-        run: doctl registry login --expiry-seconds 1200
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Build and push backend
         run: |
@@ -46,20 +44,14 @@ jobs:
       - name: Deploy to droplet
         uses: appleboy/ssh-action@v1
         env:
-          DIGITALOCEAN_ACCESS_TOKEN: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+          GH_PAT: ${{ secrets.GH_PAT }}
         with:
           host: <DEPLOY_HOST>
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: DIGITALOCEAN_ACCESS_TOKEN
+          envs: GH_PAT
           script: |
-            # Authenticate Docker to DOCR
-            if ! command -v doctl &> /dev/null; then
-              curl -sL https://github.com/digitalocean/doctl/releases/download/v1.104.0/doctl-1.104.0-linux-amd64.tar.gz | tar -xz -C /usr/local/bin
-            fi
-            doctl auth init --access-token $DIGITALOCEAN_ACCESS_TOKEN
-            doctl registry login --expiry-seconds 1200
-            # Deploy
+            echo "$GH_PAT" | docker login ghcr.io -u patrickspencer --password-stdin
             cd /opt/ehr-app
             git pull origin main
             docker compose -f docker-compose.prod.yml pull

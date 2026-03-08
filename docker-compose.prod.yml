@@ -10,7 +10,7 @@ services:
       - pgdata:/var/lib/postgresql/data
 
   backend:
-    image: registry.digitalocean.com/ehr-app/backend:latest
+    image: ghcr.io/patrickspencer/ehr-app/backend:latest
     restart: unless-stopped
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ehr
@@ -21,7 +21,7 @@ services:
       - postgres
 
   frontend:
-    image: registry.digitalocean.com/ehr-app/frontend:latest
+    image: ghcr.io/patrickspencer/ehr-app/frontend:latest
     restart: unless-stopped
     environment:
       HOSTNAME: "0.0.0.0"

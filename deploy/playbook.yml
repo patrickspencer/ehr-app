@@ -7,7 +7,8 @@
     repo_url: "{{ lookup('env', 'REPO_URL') | default('https://github.com/patrickspencer/ehr-app.git', true) }}"
     repo_branch: main
     domain: "{{ lookup('env', 'DOMAIN') | default('localhost', true) }}"
-    do_token: "{{ lookup('env', 'DIGITALOCEAN_ACCESS_TOKEN') }}"
+    gh_pat: "{{ lookup('env', 'GH_PAT') }}"
+    gh_user: "{{ lookup('env', 'GH_USER') | default('patrickspencer', true) }}"
     swap_size: 2G
 
   tasks:
@@ -81,22 +82,10 @@
         enabled: true
 
     # --- Container Registry ---
-    - name: Install doctl
-      ansible.builtin.get_url:
-        url: https://github.com/digitalocean/doctl/releases/download/v1.104.0/doctl-1.104.0-linux-amd64.tar.gz
-        dest: /tmp/doctl.tar.gz
-
-    - name: Extract doctl
-      ansible.builtin.unarchive:
-        src: /tmp/doctl.tar.gz
-        dest: /usr/local/bin
-        remote_src: true
-
-    - name: Authenticate doctl
-      command: doctl auth init --access-token {{ do_token }}
-
-    - name: Log in to DOCR
-      command: doctl registry login --expiry-seconds 3600
+    - name: Log in to GitHub Container Registry
+      command: docker login ghcr.io -u {{ gh_user }} --password-stdin
+      args:
+        stdin: "{{ gh_pat }}"
 
     # --- App ---
     - name: Clone or update repo
