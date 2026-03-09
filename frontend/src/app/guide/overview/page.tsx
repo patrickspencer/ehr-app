@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { CodeBlock, InlineCode, Table, GuideNav } from "../components";
 
 const sections = [
@@ -18,12 +19,9 @@ export default function OverviewPage() {
       <header className="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
           <h1 className="text-lg font-bold text-slate-700">Developer Guide</h1>
-          <a
-            href="/"
-            className="text-sm text-slate-500 hover:text-slate-700"
-          >
+          <Link href="/" className="text-sm text-slate-500 hover:text-slate-700">
             &larr; Back to app
-          </a>
+          </Link>
         </div>
       </header>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { createContext, ReactNode, startTransition, useCallback, useContext, useEffect, useState } from "react";
 import { User } from "@/types";
 import { getUser } from "@/lib/api";
 
@@ -23,9 +23,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       getUser(Number(stored))
         .then(setUser)
         .catch(() => localStorage.removeItem("ehr_user_id"))
-        .finally(() => setLoading(false));
+        .finally(() => startTransition(() => setLoading(false)));
     } else {
-      setLoading(false);
+      startTransition(() => setLoading(false));
     }
   }, []);
 

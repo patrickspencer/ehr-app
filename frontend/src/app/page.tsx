@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { useTabs } from "@/contexts/TabContext";
 import TabBar from "@/components/TabBar";
 import PatientFinder from "@/components/PatientFinder";
@@ -12,7 +12,9 @@ export default function Home() {
   const [showFinder, setShowFinder] = useState(false);
 
   useEffect(() => {
-    setShowFinder(false);
+    if (activeTabId !== null) {
+      startTransition(() => setShowFinder(false));
+    }
   }, [activeTabId]);
 
   return (
