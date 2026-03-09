@@ -1,0 +1,450 @@
+-- Backfills demo clinical data if shared test runs or manual edits removed seeded rows.
+
+WITH patient_profiles(email, profile) AS (
+    VALUES
+        ('sarah.johnson@email.com',    'allergy_rhinitis'),
+        ('michael.chen@email.com',     'preventive_cardiac_risk'),
+        ('emily.williams@email.com',   'back_pain'),
+        ('james.martinez@email.com',   'diabetes_control'),
+        ('aisha.patel@email.com',      'wellness_thyroid'),
+        ('robert.garcia@email.com',    'htn_lipids'),
+        ('catherine.liu@email.com',    'asthma_anxiety'),
+        ('thomas.anderson@email.com',  'gerd_back'),
+        ('diana.kowalski@email.com',   'migraine'),
+        ('william.thompson@email.com', 'diabetes_ckd'),
+        ('priya.sharma@email.com',     'wellness_thyroid'),
+        ('george.nakamura@email.com',  'parkinson_oa'),
+        ('angela.foster@email.com',    'depression_obesity'),
+        ('marcus.washington@email.com','afib_htn'),
+        ('helen.reeves@email.com',     'chf_anemia'),
+        ('daniel.obrien@email.com',    'back_pain'),
+        ('sophia.morales@email.com',   'acne_anxiety'),
+        ('frank.petrov@email.com',     'copd_smoker'),
+        ('irene.chang@email.com',      'thyroid_oa'),
+        ('laura.simmons@email.com',    'gerd_anxiety'),
+        ('omar.hassan@email.com',      'prediabetes_fatty_liver'),
+        ('julia.bennett@email.com',    'allergy_dermatitis'),
+        ('victor.alvarez@email.com',   'cad_lipids'),
+        ('naomi.baker@email.com',      'migraine_insomnia'),
+        ('samuel.reed@email.com',      'copd_smoker')
+), allergy_templates(profile, sort_order, allergen, reaction, severity, noted_at) AS (
+    VALUES
+        ('allergy_rhinitis', 1, 'Pollen', 'Sneezing and nasal congestion', 'Moderate', DATE '2019-04-12'),
+        ('allergy_rhinitis', 2, 'Cat dander', 'Itchy eyes and wheezing', 'Low', DATE '2020-08-03'),
+        ('allergy_rhinitis', 3, 'Sulfa antibiotics', 'Diffuse rash', 'High', DATE '2017-02-18'),
+        ('preventive_cardiac_risk', 1, 'Shellfish', 'Hives', 'Moderate', DATE '2015-06-09'),
+        ('preventive_cardiac_risk', 2, 'Latex', 'Localized rash', 'Low', DATE '2018-11-14'),
+        ('back_pain', 1, 'Penicillin', 'Childhood rash', 'Low', DATE '2001-05-20'),
+        ('back_pain', 2, 'Adhesive tape', 'Skin irritation', 'Low', DATE '2022-09-02'),
+        ('diabetes_control', 1, 'Penicillin', 'Rash', 'Moderate', DATE '1999-07-15'),
+        ('diabetes_control', 2, 'Shellfish', 'Lip swelling', 'Low', DATE '2016-04-03'),
+        ('wellness_thyroid', 1, 'Peanuts', 'Mild oral itching', 'Low', DATE '2010-01-11'),
+        ('wellness_thyroid', 2, 'Latex', 'Contact dermatitis', 'Low', DATE '2021-03-07'),
+        ('htn_lipids', 1, 'Sulfa antibiotics', 'Rash and pruritus', 'High', DATE '2012-10-05'),
+        ('htn_lipids', 2, 'Iodinated contrast', 'Flushing and hives', 'Moderate', DATE '2023-06-18'),
+        ('asthma_anxiety', 1, 'Pollen', 'Wheezing and rhinorrhea', 'High', DATE '2014-04-15'),
+        ('asthma_anxiety', 2, 'Dust mites', 'Cough and congestion', 'Moderate', DATE '2014-04-15'),
+        ('asthma_anxiety', 3, 'Cat dander', 'Chest tightness', 'Moderate', DATE '2019-01-20'),
+        ('gerd_back', 1, 'Penicillin', 'Rash', 'Low', DATE '2008-09-02'),
+        ('gerd_back', 2, 'Bee venom', 'Localized swelling', 'Moderate', DATE '2019-07-11'),
+        ('migraine', 1, 'Red dye', 'Headache trigger', 'Moderate', DATE '2021-02-10'),
+        ('migraine', 2, 'Penicillin', 'Rash', 'Low', DATE '2005-06-25'),
+        ('diabetes_ckd', 1, 'Sulfa antibiotics', 'Rash', 'High', DATE '2011-04-18'),
+        ('diabetes_ckd', 2, 'Iodinated contrast', 'Shortness of breath and flushing', 'Moderate', DATE '2022-12-01'),
+        ('parkinson_oa', 1, 'Penicillin', 'Rash', 'Low', DATE '1980-03-17'),
+        ('parkinson_oa', 2, 'Latex', 'Contact rash', 'Low', DATE '2017-09-04'),
+        ('depression_obesity', 1, 'Shrimp', 'Hives', 'Moderate', DATE '2007-05-06'),
+        ('depression_obesity', 2, 'Penicillin', 'Rash', 'Low', DATE '1998-01-23'),
+        ('afib_htn', 1, 'Iodinated contrast', 'Hives', 'Moderate', DATE '2020-08-27'),
+        ('afib_htn', 2, 'Penicillin', 'Rash', 'Low', DATE '1986-10-10'),
+        ('chf_anemia', 1, 'Sulfa antibiotics', 'Generalized rash', 'High', DATE '2004-02-14'),
+        ('chf_anemia', 2, 'Latex', 'Skin irritation', 'Low', DATE '2015-12-08'),
+        ('acne_anxiety', 1, 'Nickel', 'Contact rash', 'Low', DATE '2016-05-19'),
+        ('acne_anxiety', 2, 'Penicillin', 'Rash', 'Low', DATE '2003-11-02'),
+        ('copd_smoker', 1, 'Penicillin', 'Rash', 'Low', DATE '1988-07-03'),
+        ('copd_smoker', 2, 'Seasonal pollen', 'Cough and watery eyes', 'Moderate', DATE '2018-04-19'),
+        ('thyroid_oa', 1, 'Latex', 'Skin irritation', 'Low', DATE '2011-08-12'),
+        ('thyroid_oa', 2, 'Shellfish', 'Itching', 'Low', DATE '2009-03-21'),
+        ('gerd_anxiety', 1, 'Kiwi', 'Oral itching', 'Moderate', DATE '2019-06-09'),
+        ('gerd_anxiety', 2, 'Penicillin', 'Rash', 'Low', DATE '2000-04-02'),
+        ('prediabetes_fatty_liver', 1, 'Peanuts', 'Mild itching', 'Low', DATE '2013-07-18'),
+        ('prediabetes_fatty_liver', 2, 'Penicillin', 'Rash', 'Low', DATE '1997-09-14'),
+        ('allergy_dermatitis', 1, 'Pollen', 'Sneezing and itchy eyes', 'High', DATE '2016-04-12'),
+        ('allergy_dermatitis', 2, 'Fragrance mix', 'Eczematous rash', 'Moderate', DATE '2021-01-08'),
+        ('allergy_dermatitis', 3, 'Cat dander', 'Congestion', 'Low', DATE '2018-06-27'),
+        ('cad_lipids', 1, 'Iodinated contrast', 'Hives and flushing', 'Moderate', DATE '2021-05-30'),
+        ('cad_lipids', 2, 'Sulfa antibiotics', 'Rash', 'Low', DATE '2008-10-09'),
+        ('migraine_insomnia', 1, 'Red dye', 'Headache trigger', 'Moderate', DATE '2022-02-04'),
+        ('migraine_insomnia', 2, 'Latex', 'Localized rash', 'Low', DATE '2019-09-17')
+)
+INSERT INTO patient_allergies (patient_id, allergen, reaction, severity, noted_at, sort_order)
+SELECT p.id, t.allergen, t.reaction, t.severity, t.noted_at, t.sort_order
+FROM patients p
+JOIN patient_profiles pp ON pp.email = p.email
+JOIN allergy_templates t ON t.profile = pp.profile
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM patient_allergies existing
+    WHERE existing.patient_id = p.id
+      AND lower(existing.allergen) = lower(t.allergen)
+);
+
+WITH patient_profiles(email, profile) AS (
+    VALUES
+        ('sarah.johnson@email.com',    'allergy_rhinitis'),
+        ('michael.chen@email.com',     'preventive_cardiac_risk'),
+        ('emily.williams@email.com',   'back_pain'),
+        ('james.martinez@email.com',   'diabetes_control'),
+        ('aisha.patel@email.com',      'wellness_thyroid'),
+        ('robert.garcia@email.com',    'htn_lipids'),
+        ('catherine.liu@email.com',    'asthma_anxiety'),
+        ('thomas.anderson@email.com',  'gerd_back'),
+        ('diana.kowalski@email.com',   'migraine'),
+        ('william.thompson@email.com', 'diabetes_ckd'),
+        ('priya.sharma@email.com',     'wellness_thyroid'),
+        ('george.nakamura@email.com',  'parkinson_oa'),
+        ('angela.foster@email.com',    'depression_obesity'),
+        ('marcus.washington@email.com','afib_htn'),
+        ('helen.reeves@email.com',     'chf_anemia'),
+        ('daniel.obrien@email.com',    'back_pain'),
+        ('sophia.morales@email.com',   'acne_anxiety'),
+        ('frank.petrov@email.com',     'copd_smoker'),
+        ('irene.chang@email.com',      'thyroid_oa'),
+        ('laura.simmons@email.com',    'gerd_anxiety'),
+        ('omar.hassan@email.com',      'prediabetes_fatty_liver'),
+        ('julia.bennett@email.com',    'allergy_dermatitis'),
+        ('victor.alvarez@email.com',   'cad_lipids'),
+        ('naomi.baker@email.com',      'migraine_insomnia'),
+        ('samuel.reed@email.com',      'copd_smoker')
+), condition_templates(profile, sort_order, condition_name, icd10_code, status, diagnosed_at, notes) AS (
+    VALUES
+        ('allergy_rhinitis', 1, 'Allergic rhinitis', 'J30.1', 'Active', DATE '2019-04-12', 'Seasonal spring flare pattern.'),
+        ('allergy_rhinitis', 2, 'Dermatitis', 'L30.9', 'Stable', DATE '2021-08-03', 'Intermittent contact-related flares.'),
+        ('preventive_cardiac_risk', 1, 'Essential hypertension', 'I10', 'Active', DATE '2022-03-14', 'Mild office hypertension, home readings borderline.'),
+        ('preventive_cardiac_risk', 2, 'Dyslipidemia', 'E78.5', 'Active', DATE '2022-03-14', 'Elevated LDL managed with statin therapy.'),
+        ('back_pain', 1, 'Low back pain', 'M54.5', 'Active', DATE '2025-11-05', 'Mechanical pain pattern without radiculopathy.'),
+        ('back_pain', 2, 'Chronic pain', 'G89.29', 'Monitoring', DATE '2025-11-05', 'Functional status improving with therapy.'),
+        ('diabetes_control', 1, 'Type 2 diabetes mellitus', 'E11.9', 'Active', DATE '2018-06-20', 'A1c near goal on oral therapy.'),
+        ('diabetes_control', 2, 'Essential hypertension', 'I10', 'Active', DATE '2018-06-20', 'Home blood pressures mildly elevated.'),
+        ('wellness_thyroid', 1, 'Hypothyroidism', 'E03.9', 'Stable', DATE '2021-02-09', 'TSH generally at goal.'),
+        ('wellness_thyroid', 2, 'Fatigue', 'R53.83', 'Monitoring', DATE '2024-11-18', 'Improves with sleep and thyroid control.'),
+        ('htn_lipids', 1, 'Essential hypertension', 'I10', 'Active', DATE '2010-04-01', 'Longstanding blood pressure diagnosis.'),
+        ('htn_lipids', 2, 'Dyslipidemia', 'E78.5', 'Active', DATE '2013-09-17', 'Secondary prevention lipid targets reviewed.'),
+        ('asthma_anxiety', 1, 'Mild intermittent asthma', 'J45.20', 'Active', DATE '2004-05-12', 'Triggered by seasonal allergens and URI exposure.'),
+        ('asthma_anxiety', 2, 'Generalized anxiety disorder', 'F41.1', 'Active', DATE '2023-02-20', 'Symptoms fluctuate with work stress.'),
+        ('gerd_back', 1, 'Gastro-esophageal reflux disease', 'K21.0', 'Active', DATE '2025-07-03', 'Meal-triggered reflux symptoms.'),
+        ('gerd_back', 2, 'Low back pain', 'M54.5', 'Monitoring', DATE '2025-10-15', 'Improving after physical therapy.'),
+        ('migraine', 1, 'Migraine', 'G43.909', 'Active', DATE '2015-01-08', 'Frequency improved on prophylaxis.'),
+        ('diabetes_ckd', 1, 'Type 2 diabetes mellitus', 'E11.9', 'Active', DATE '2012-10-12', 'Targeted for renal-protective regimen.'),
+        ('diabetes_ckd', 2, 'Chronic kidney disease, stage 3', 'N18.3', 'Monitoring', DATE '2023-05-04', 'Stable renal function.'),
+        ('parkinson_oa', 1, 'Parkinson disease', 'G20', 'Active', DATE '2022-03-09', 'Motor symptoms stable on dopaminergic regimen.'),
+        ('parkinson_oa', 2, 'Primary osteoarthritis, right knee', 'M17.11', 'Active', DATE '2024-06-18', 'Pain worsens with activity.'),
+        ('parkinson_oa', 3, 'Benign prostatic hyperplasia', 'N40.0', 'Stable', DATE '2021-09-13', 'Voiding symptoms controlled.'),
+        ('depression_obesity', 1, 'Major depressive disorder', 'F32.1', 'Active', DATE '2020-05-19', 'Mood symptoms improving on SSRI.'),
+        ('depression_obesity', 2, 'Morbid obesity', 'E66.01', 'Active', DATE '2021-01-10', 'Participating in weight-management program.'),
+        ('afib_htn', 1, 'Atrial fibrillation', 'I48.91', 'Active', DATE '2023-06-07', 'Rate-controlled on beta blocker.'),
+        ('afib_htn', 2, 'Essential hypertension', 'I10', 'Active', DATE '2014-11-02', 'Needs close blood pressure monitoring.'),
+        ('chf_anemia', 1, 'Heart failure', 'I50.9', 'Active', DATE '2021-03-26', 'Volume status currently compensated.'),
+        ('chf_anemia', 2, 'Anemia', 'D64.9', 'Monitoring', DATE '2025-03-20', 'Iron deficiency pattern improving.'),
+        ('chf_anemia', 3, 'Hypothyroidism', 'E03.9', 'Stable', DATE '2019-08-05', 'On replacement therapy.'),
+        ('acne_anxiety', 1, 'Acne vulgaris', 'L70.0', 'Active', DATE '2022-07-01', 'Inflammatory acne improving with treatment.'),
+        ('acne_anxiety', 2, 'Anxiety disorder', 'F41.9', 'Active', DATE '2024-12-10', 'GAD symptoms improving with SSRI.'),
+        ('copd_smoker', 1, 'Chronic obstructive pulmonary disease', 'J44.1', 'Active', DATE '2020-09-14', 'Symptoms improve with inhaler adherence.'),
+        ('copd_smoker', 2, 'Nicotine dependence', 'F17.210', 'Active', DATE '1995-04-22', 'Ongoing cessation efforts.'),
+        ('thyroid_oa', 1, 'Hypothyroidism', 'E03.9', 'Stable', DATE '2011-05-30', 'TSH at goal on stable dose.'),
+        ('thyroid_oa', 2, 'Primary osteoarthritis, left knee', 'M17.12', 'Active', DATE '2024-04-25', 'Symptoms fluctuate with activity.'),
+        ('thyroid_oa', 3, 'Vitamin D deficiency', 'E55.9', 'Monitoring', DATE '2025-12-02', 'Supplementation started.'),
+        ('gerd_anxiety', 1, 'Gastro-esophageal reflux disease', 'K21.0', 'Active', DATE '2025-06-18', 'Nocturnal reflux improved with PPI.'),
+        ('gerd_anxiety', 2, 'Generalized anxiety disorder', 'F41.1', 'Active', DATE '2025-06-18', 'Symptoms partially improved on medication.'),
+        ('prediabetes_fatty_liver', 1, 'Prediabetes', 'R73.03', 'Active', DATE '2025-07-09', 'A1c improving with weight loss.'),
+        ('prediabetes_fatty_liver', 2, 'Fatty liver', 'K76.0', 'Monitoring', DATE '2025-07-09', 'Liver enzymes trending down.'),
+        ('allergy_dermatitis', 1, 'Allergic rhinitis', 'J30.1', 'Active', DATE '2025-08-14', 'Perennial symptoms with seasonal flares.'),
+        ('allergy_dermatitis', 2, 'Dermatitis', 'L30.9', 'Active', DATE '2025-08-14', 'Flexural eczema pattern.'),
+        ('cad_lipids', 1, 'Atherosclerotic heart disease', 'I25.10', 'Stable', DATE '2022-05-30', 'No recent anginal symptoms.'),
+        ('cad_lipids', 2, 'Dyslipidemia', 'E78.5', 'Active', DATE '2018-09-21', 'On high-intensity statin therapy.'),
+        ('migraine_insomnia', 1, 'Migraine', 'G43.909', 'Active', DATE '2025-09-04', 'Frequency reduced after prophylaxis.'),
+        ('migraine_insomnia', 2, 'Insomnia', 'G47.00', 'Active', DATE '2025-09-04', 'Sleep initiation remains inconsistent.')
+)
+INSERT INTO patient_conditions (patient_id, condition_name, icd10_code, status, diagnosed_at, notes, sort_order)
+SELECT p.id, t.condition_name, t.icd10_code, t.status, t.diagnosed_at, t.notes, t.sort_order
+FROM patients p
+JOIN patient_profiles pp ON pp.email = p.email
+JOIN condition_templates t ON t.profile = pp.profile
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM patient_conditions existing
+    WHERE existing.patient_id = p.id
+      AND lower(existing.condition_name) = lower(t.condition_name)
+);
+
+WITH patient_profiles(email, profile) AS (
+    VALUES
+        ('sarah.johnson@email.com',    'allergy_rhinitis'),
+        ('michael.chen@email.com',     'preventive_cardiac_risk'),
+        ('emily.williams@email.com',   'back_pain'),
+        ('james.martinez@email.com',   'diabetes_control'),
+        ('aisha.patel@email.com',      'wellness_thyroid'),
+        ('robert.garcia@email.com',    'htn_lipids'),
+        ('catherine.liu@email.com',    'asthma_anxiety'),
+        ('thomas.anderson@email.com',  'gerd_back'),
+        ('diana.kowalski@email.com',   'migraine'),
+        ('william.thompson@email.com', 'diabetes_ckd'),
+        ('priya.sharma@email.com',     'wellness_thyroid'),
+        ('george.nakamura@email.com',  'parkinson_oa'),
+        ('angela.foster@email.com',    'depression_obesity'),
+        ('marcus.washington@email.com','afib_htn'),
+        ('helen.reeves@email.com',     'chf_anemia'),
+        ('daniel.obrien@email.com',    'back_pain'),
+        ('sophia.morales@email.com',   'acne_anxiety'),
+        ('frank.petrov@email.com',     'copd_smoker'),
+        ('irene.chang@email.com',      'thyroid_oa'),
+        ('laura.simmons@email.com',    'gerd_anxiety'),
+        ('omar.hassan@email.com',      'prediabetes_fatty_liver'),
+        ('julia.bennett@email.com',    'allergy_dermatitis'),
+        ('victor.alvarez@email.com',   'cad_lipids'),
+        ('naomi.baker@email.com',      'migraine_insomnia'),
+        ('samuel.reed@email.com',      'copd_smoker')
+), medication_templates(profile, sort_order, medication_name, dose, route, frequency, status, started_at, instructions) AS (
+    VALUES
+        ('allergy_rhinitis', 1, 'Cetirizine', '10 mg', 'Oral', 'Daily', 'Active', DATE '2024-03-10', 'Take during high-allergen seasons.'),
+        ('allergy_rhinitis', 2, 'Fluticasone nasal spray', '50 mcg', 'Nasal', '2 sprays each nostril daily', 'Active', DATE '2024-03-10', 'Prime before first use each day.'),
+        ('allergy_rhinitis', 3, 'Triamcinolone 0.1% cream', 'Thin layer', 'Topical', 'Twice daily as needed', 'PRN', DATE '2024-08-03', 'Apply to rash flares only.'),
+        ('preventive_cardiac_risk', 1, 'Atorvastatin', '20 mg', 'Oral', 'Nightly', 'Active', DATE '2023-03-14', 'Take with evening meal.'),
+        ('preventive_cardiac_risk', 2, 'Lisinopril', '10 mg', 'Oral', 'Daily', 'Active', DATE '2023-03-14', 'Hold for symptomatic hypotension.'),
+        ('back_pain', 1, 'Naproxen', '500 mg', 'Oral', 'Twice daily as needed', 'PRN', DATE '2025-11-05', 'Take with food for pain flares.'),
+        ('back_pain', 2, 'Cyclobenzaprine', '5 mg', 'Oral', 'At bedtime as needed', 'PRN', DATE '2025-11-05', 'Avoid driving after dose.'),
+        ('diabetes_control', 1, 'Metformin', '500 mg', 'Oral', 'Twice daily', 'Active', DATE '2018-06-20', 'Take with meals.'),
+        ('diabetes_control', 2, 'Lisinopril', '10 mg', 'Oral', 'Daily', 'Active', DATE '2021-05-14', 'Monitor home blood pressure.'),
+        ('wellness_thyroid', 1, 'Levothyroxine', '75 mcg', 'Oral', 'Daily', 'Active', DATE '2021-02-09', 'Take on empty stomach.'),
+        ('wellness_thyroid', 2, 'Vitamin D3', '2000 IU', 'Oral', 'Daily', 'Active', DATE '2024-11-18', 'Take with food.'),
+        ('htn_lipids', 1, 'Lisinopril', '20 mg', 'Oral', 'Daily', 'Active', DATE '2010-04-01', 'Increase fluids if lightheaded.'),
+        ('htn_lipids', 2, 'Atorvastatin', '40 mg', 'Oral', 'Nightly', 'Active', DATE '2013-09-17', 'Report muscle aches if persistent.'),
+        ('asthma_anxiety', 1, 'Fluticasone inhaler', '110 mcg', 'Inhaled', '1 puff twice daily', 'Active', DATE '2025-08-22', 'Rinse mouth after use.'),
+        ('asthma_anxiety', 2, 'Albuterol HFA', '90 mcg', 'Inhaled', '2 puffs every 6 hours as needed', 'PRN', DATE '2020-01-15', 'Use spacer when available.'),
+        ('asthma_anxiety', 3, 'Sertraline', '100 mg', 'Oral', 'Daily', 'Active', DATE '2025-11-10', 'Take in the morning with food.'),
+        ('gerd_back', 1, 'Omeprazole', '20 mg', 'Oral', 'Daily before breakfast', 'Active', DATE '2025-07-03', 'Avoid trigger foods late at night.'),
+        ('gerd_back', 2, 'Naproxen', '500 mg', 'Oral', 'Twice daily as needed', 'PRN', DATE '2025-10-15', 'Use sparingly because of reflux symptoms.'),
+        ('migraine', 1, 'Topiramate', '50 mg', 'Oral', 'Nightly', 'Active', DATE '2025-08-05', 'Hydrate well during therapy.'),
+        ('migraine', 2, 'Sumatriptan', '50 mg', 'Oral', 'At migraine onset as needed', 'PRN', DATE '2023-02-11', 'May repeat once after 2 hours.'),
+        ('diabetes_ckd', 1, 'Metformin', '1000 mg', 'Oral', 'Twice daily', 'Active', DATE '2016-04-10', 'Take with meals.'),
+        ('diabetes_ckd', 2, 'Empagliflozin', '10 mg', 'Oral', 'Daily', 'Active', DATE '2025-07-15', 'Maintain hydration and monitor renal labs.'),
+        ('diabetes_ckd', 3, 'Lisinopril', '10 mg', 'Oral', 'Daily', 'Active', DATE '2025-07-15', 'Renal-protective dosing.'),
+        ('parkinson_oa', 1, 'Carbidopa-levodopa', '25/100 mg', 'Oral', 'Four times daily', 'Active', DATE '2022-03-09', 'Take at consistent intervals.'),
+        ('parkinson_oa', 2, 'Duloxetine', '30 mg', 'Oral', 'Daily', 'Active', DATE '2025-09-25', 'Helps pain and mood symptoms.'),
+        ('parkinson_oa', 3, 'Tamsulosin', '0.4 mg', 'Oral', 'Nightly', 'Active', DATE '2021-09-13', 'Take after evening meal.'),
+        ('depression_obesity', 1, 'Fluoxetine', '40 mg', 'Oral', 'Daily', 'Active', DATE '2025-05-08', 'Continue daily without interruption.'),
+        ('depression_obesity', 2, 'Semaglutide', '0.5 mg', 'Subcutaneous', 'Weekly', 'Active', DATE '2025-11-22', 'Escalate only if tolerated.'),
+        ('afib_htn', 1, 'Apixaban', '5 mg', 'Oral', 'Twice daily', 'Active', DATE '2023-06-07', 'Do not skip doses.'),
+        ('afib_htn', 2, 'Metoprolol succinate', '50 mg', 'Oral', 'Daily', 'Active', DATE '2025-04-15', 'Check heart rate before taking if symptomatic.'),
+        ('afib_htn', 3, 'Amlodipine', '10 mg', 'Oral', 'Daily', 'Active', DATE '2022-08-10', 'Monitor for leg swelling.'),
+        ('chf_anemia', 1, 'Furosemide', '60 mg', 'Oral', 'Daily', 'Active', DATE '2025-09-05', 'Track daily weights.'),
+        ('chf_anemia', 2, 'Carvedilol', '12.5 mg', 'Oral', 'Twice daily', 'Active', DATE '2021-03-26', 'Take with meals.'),
+        ('chf_anemia', 3, 'Ferrous sulfate', '325 mg', 'Oral', 'Daily', 'Active', DATE '2025-06-10', 'Take with vitamin C when possible.'),
+        ('chf_anemia', 4, 'Levothyroxine', '50 mcg', 'Oral', 'Daily', 'Active', DATE '2019-08-05', 'Take before breakfast.'),
+        ('acne_anxiety', 1, 'Doxycycline', '100 mg', 'Oral', 'Twice daily', 'Active', DATE '2025-09-12', 'Use sun protection.'),
+        ('acne_anxiety', 2, 'Sertraline', '50 mg', 'Oral', 'Daily', 'Active', DATE '2026-01-08', 'Take with food if nauseated.'),
+        ('acne_anxiety', 3, 'Benzoyl peroxide wash', '5%', 'Topical', 'Daily', 'Active', DATE '2025-09-12', 'Avoid bleaching fabrics.'),
+        ('copd_smoker', 1, 'Tiotropium', '18 mcg', 'Inhaled', 'Daily', 'Active', DATE '2025-05-20', 'Use at the same time each morning.'),
+        ('copd_smoker', 2, 'Nicotine patch', '21 mg', 'Transdermal', 'Daily', 'Active', DATE '2025-05-20', 'Rotate patch sites.'),
+        ('copd_smoker', 3, 'Fluticasone/salmeterol', '250/50 mcg', 'Inhaled', '1 puff twice daily', 'Active', DATE '2025-08-25', 'Rinse mouth after each use.'),
+        ('thyroid_oa', 1, 'Levothyroxine', '100 mcg', 'Oral', 'Daily', 'Active', DATE '2011-05-30', 'Take first thing in the morning.'),
+        ('thyroid_oa', 2, 'Meloxicam', '15 mg', 'Oral', 'Daily', 'Active', DATE '2025-04-25', 'Take with food.'),
+        ('thyroid_oa', 3, 'Vitamin D3', '2000 IU', 'Oral', 'Daily', 'Active', DATE '2025-12-02', 'Continue through winter months.'),
+        ('gerd_anxiety', 1, 'Omeprazole', '20 mg', 'Oral', 'Daily before breakfast', 'Active', DATE '2025-06-18', 'Avoid lying down after meals.'),
+        ('gerd_anxiety', 2, 'Sertraline', '50 mg', 'Oral', 'Daily', 'Active', DATE '2025-10-02', 'Monitor mood and GI side effects.'),
+        ('prediabetes_fatty_liver', 1, 'Metformin XR', '500 mg', 'Oral', 'Nightly', 'Active', DATE '2025-07-09', 'Take with evening meal.'),
+        ('prediabetes_fatty_liver', 2, 'Vitamin E', '400 IU', 'Oral', 'Daily', 'Active', DATE '2025-07-09', 'Discuss continuation at annual review.'),
+        ('allergy_dermatitis', 1, 'Cetirizine', '10 mg', 'Oral', 'Daily', 'Active', DATE '2025-08-14', 'Continue through pollen season.'),
+        ('allergy_dermatitis', 2, 'Fluticasone nasal spray', '50 mcg', 'Nasal', '2 sprays each nostril daily', 'Active', DATE '2025-08-14', 'Use daily during flares.'),
+        ('allergy_dermatitis', 3, 'Triamcinolone 0.1% cream', 'Thin layer', 'Topical', 'Twice daily as needed', 'PRN', DATE '2025-08-14', 'Avoid prolonged continuous use.'),
+        ('cad_lipids', 1, 'Atorvastatin', '80 mg', 'Oral', 'Nightly', 'Active', DATE '2025-05-30', 'High-intensity lipid therapy.'),
+        ('cad_lipids', 2, 'Aspirin', '81 mg', 'Oral', 'Daily', 'Active', DATE '2022-05-30', 'Take with food.'),
+        ('cad_lipids', 3, 'Ezetimibe', '10 mg', 'Oral', 'Daily', 'Active', DATE '2025-09-26', 'Added for LDL optimization.'),
+        ('migraine_insomnia', 1, 'Topiramate', '25 mg', 'Oral', 'Nightly', 'Active', DATE '2025-09-04', 'Increase only if tolerated.'),
+        ('migraine_insomnia', 2, 'Trazodone', '50 mg', 'Oral', 'At bedtime', 'Active', DATE '2026-01-16', 'Take 30 minutes before sleep.'),
+        ('migraine_insomnia', 3, 'Sumatriptan', '50 mg', 'Oral', 'At migraine onset as needed', 'PRN', DATE '2025-09-04', 'Limit to recommended maximum frequency.')
+)
+INSERT INTO patient_medications (patient_id, medication_name, dose, route, frequency, status, started_at, instructions, sort_order)
+SELECT p.id, t.medication_name, t.dose, t.route, t.frequency, t.status, t.started_at, t.instructions, t.sort_order
+FROM patients p
+JOIN patient_profiles pp ON pp.email = p.email
+JOIN medication_templates t ON t.profile = pp.profile
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM patient_medications existing
+    WHERE existing.patient_id = p.id
+      AND lower(existing.medication_name) = lower(t.medication_name)
+);
+WITH new_patient_profiles(email, profile) AS (
+    VALUES
+        ('tara.nguyen@email.com',   'tara_diabetes_htn'),
+        ('leon.fischer@email.com',  'leon_smoker_insomnia_lipids'),
+        ('maya.coleman@email.com',  'maya_asthma_anxiety'),
+        ('dennis.harper@email.com', 'dennis_chf'),
+        ('elena.ruiz@email.com',    'elena_migraine_dermatitis')
+), allergy_templates(profile, sort_order, allergen, reaction, severity, noted_at) AS (
+    VALUES
+        ('tara_diabetes_htn', 1, 'Penicillin', 'Rash', 'Low', DATE '2001-02-09'),
+        ('tara_diabetes_htn', 2, 'Shellfish', 'Lip itching', 'Low', DATE '2016-06-18'),
+        ('leon_smoker_insomnia_lipids', 1, 'Iodinated contrast', 'Flushing', 'Moderate', DATE '2022-03-15'),
+        ('leon_smoker_insomnia_lipids', 2, 'Penicillin', 'Rash', 'Low', DATE '1998-08-12'),
+        ('maya_asthma_anxiety', 1, 'Pollen', 'Wheezing and itchy eyes', 'High', DATE '2015-04-20'),
+        ('maya_asthma_anxiety', 2, 'Dust mites', 'Cough', 'Moderate', DATE '2015-04-20'),
+        ('dennis_chf', 1, 'Sulfa antibiotics', 'Diffuse rash', 'High', DATE '2008-01-07'),
+        ('dennis_chf', 2, 'Latex', 'Skin irritation', 'Low', DATE '2013-11-02'),
+        ('elena_migraine_dermatitis', 1, 'Fragrance mix', 'Hand dermatitis flare', 'Moderate', DATE '2021-05-06'),
+        ('elena_migraine_dermatitis', 2, 'Red dye', 'Headache trigger', 'Moderate', DATE '2022-09-14')
+)
+INSERT INTO patient_allergies (patient_id, allergen, reaction, severity, noted_at, sort_order)
+SELECT p.id, t.allergen, t.reaction, t.severity, t.noted_at, t.sort_order
+FROM patients p
+JOIN new_patient_profiles npp ON npp.email = p.email
+JOIN allergy_templates t ON t.profile = npp.profile
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM patient_allergies existing
+    WHERE existing.patient_id = p.id
+      AND lower(existing.allergen) = lower(t.allergen)
+);
+
+WITH new_patient_profiles(email, profile) AS (
+    VALUES
+        ('tara.nguyen@email.com',   'tara_diabetes_htn'),
+        ('leon.fischer@email.com',  'leon_smoker_insomnia_lipids'),
+        ('maya.coleman@email.com',  'maya_asthma_anxiety'),
+        ('dennis.harper@email.com', 'dennis_chf'),
+        ('elena.ruiz@email.com',    'elena_migraine_dermatitis')
+), condition_templates(profile, sort_order, condition_name, icd10_code, status, diagnosed_at, notes) AS (
+    VALUES
+        ('tara_diabetes_htn', 1, 'Type 2 diabetes mellitus', 'E11.9', 'Active', DATE '2020-07-18', 'A1c improving with lifestyle and metformin.'),
+        ('tara_diabetes_htn', 2, 'Essential hypertension', 'I10', 'Active', DATE '2020-07-18', 'Home readings mostly controlled.'),
+        ('leon_smoker_insomnia_lipids', 1, 'Dyslipidemia', 'E78.5', 'Active', DATE '2025-08-28', 'Started statin therapy.'),
+        ('leon_smoker_insomnia_lipids', 2, 'Nicotine dependence', 'F17.210', 'Active', DATE '1997-06-03', 'Currently cutting down.'),
+        ('leon_smoker_insomnia_lipids', 3, 'Insomnia', 'G47.00', 'Monitoring', DATE '2024-10-10', 'Sleep hygiene counseling started.'),
+        ('maya_asthma_anxiety', 1, 'Mild intermittent asthma', 'J45.20', 'Active', DATE '2012-03-24', 'Triggered by exercise and seasonal allergens.'),
+        ('maya_asthma_anxiety', 2, 'Generalized anxiety disorder', 'F41.1', 'Active', DATE '2023-01-12', 'Responding to SSRI.'),
+        ('dennis_chf', 1, 'Heart failure', 'I50.9', 'Active', DATE '2024-12-22', 'Recent hospitalization, now euvolemic.'),
+        ('dennis_chf', 2, 'Essential hypertension', 'I10', 'Active', DATE '2018-04-09', 'Needs close monitoring.'),
+        ('elena_migraine_dermatitis', 1, 'Migraine', 'G43.909', 'Active', DATE '2019-08-01', 'Triggered by stress and red dye exposure.'),
+        ('elena_migraine_dermatitis', 2, 'Dermatitis', 'L30.9', 'Active', DATE '2023-05-06', 'Hand dermatitis with fragrance exposure.')
+)
+INSERT INTO patient_conditions (patient_id, condition_name, icd10_code, status, diagnosed_at, notes, sort_order)
+SELECT p.id, t.condition_name, t.icd10_code, t.status, t.diagnosed_at, t.notes, t.sort_order
+FROM patients p
+JOIN new_patient_profiles npp ON npp.email = p.email
+JOIN condition_templates t ON t.profile = npp.profile
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM patient_conditions existing
+    WHERE existing.patient_id = p.id
+      AND lower(existing.condition_name) = lower(t.condition_name)
+);
+
+WITH new_patient_profiles(email, profile) AS (
+    VALUES
+        ('tara.nguyen@email.com',   'tara_diabetes_htn'),
+        ('leon.fischer@email.com',  'leon_smoker_insomnia_lipids'),
+        ('maya.coleman@email.com',  'maya_asthma_anxiety'),
+        ('dennis.harper@email.com', 'dennis_chf'),
+        ('elena.ruiz@email.com',    'elena_migraine_dermatitis')
+), medication_templates(profile, sort_order, medication_name, dose, route, frequency, status, started_at, instructions) AS (
+    VALUES
+        ('tara_diabetes_htn', 1, 'Metformin', '1000 mg', 'Oral', 'Twice daily', 'Active', DATE '2020-07-18', 'Take with meals.'),
+        ('tara_diabetes_htn', 2, 'Losartan', '50 mg', 'Oral', 'Daily', 'Active', DATE '2020-07-18', 'Monitor home blood pressure.'),
+        ('leon_smoker_insomnia_lipids', 1, 'Rosuvastatin', '20 mg', 'Oral', 'Nightly', 'Active', DATE '2025-08-28', 'Continue lifestyle changes.'),
+        ('leon_smoker_insomnia_lipids', 2, 'Nicotine lozenge', '4 mg', 'Buccal', 'Every 2 hours as needed', 'PRN', DATE '2025-08-28', 'Use for smoking cravings.'),
+        ('leon_smoker_insomnia_lipids', 3, 'Melatonin', '3 mg', 'Oral', 'At bedtime', 'Active', DATE '2025-08-28', 'Take 30 minutes before sleep.'),
+        ('maya_asthma_anxiety', 1, 'Budesonide inhaler', '180 mcg', 'Inhaled', '1 puff twice daily', 'Active', DATE '2025-09-30', 'Rinse mouth after use.'),
+        ('maya_asthma_anxiety', 2, 'Albuterol HFA', '90 mcg', 'Inhaled', '2 puffs as needed', 'PRN', DATE '2020-03-24', 'Use before exercise if needed.'),
+        ('maya_asthma_anxiety', 3, 'Sertraline', '50 mg', 'Oral', 'Daily', 'Active', DATE '2025-09-30', 'Take with breakfast.'),
+        ('dennis_chf', 1, 'Furosemide', '40 mg', 'Oral', 'Daily', 'Active', DATE '2024-12-22', 'Track daily weights and swelling.'),
+        ('dennis_chf', 2, 'Carvedilol', '12.5 mg', 'Oral', 'Twice daily', 'Active', DATE '2024-12-22', 'Take with meals.'),
+        ('dennis_chf', 3, 'Lisinopril', '20 mg', 'Oral', 'Daily', 'Active', DATE '2024-12-22', 'Call if dizzy or lightheaded.'),
+        ('elena_migraine_dermatitis', 1, 'Sumatriptan', '50 mg', 'Oral', 'At migraine onset as needed', 'PRN', DATE '2025-10-24', 'May repeat once in 2 hours if needed.'),
+        ('elena_migraine_dermatitis', 2, 'Triamcinolone 0.1% cream', 'Thin layer', 'Topical', 'Twice daily as needed', 'PRN', DATE '2025-10-24', 'Use on dermatitis flares only.')
+)
+INSERT INTO patient_medications (patient_id, medication_name, dose, route, frequency, status, started_at, instructions, sort_order)
+SELECT p.id, t.medication_name, t.dose, t.route, t.frequency, t.status, t.started_at, t.instructions, t.sort_order
+FROM patients p
+JOIN new_patient_profiles npp ON npp.email = p.email
+JOIN medication_templates t ON t.profile = npp.profile
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM patient_medications existing
+    WHERE existing.patient_id = p.id
+      AND lower(existing.medication_name) = lower(t.medication_name)
+);
+
+WITH risk_profiles(email, profile) AS (
+    VALUES
+        ('sarah.johnson@email.com',     'allergy'),
+        ('michael.chen@email.com',      'cardiometabolic'),
+        ('emily.williams@email.com',    'pain'),
+        ('james.martinez@email.com',    'cardiometabolic'),
+        ('aisha.patel@email.com',       'low_default'),
+        ('robert.garcia@email.com',     'cardiometabolic'),
+        ('catherine.liu@email.com',     'respiratory_mental'),
+        ('thomas.anderson@email.com',   'pain'),
+        ('diana.kowalski@email.com',    'migraine'),
+        ('william.thompson@email.com',  'cardiometabolic_complex'),
+        ('priya.sharma@email.com',      'low_default'),
+        ('george.nakamura@email.com',   'neuro_fall'),
+        ('angela.foster@email.com',     'mental_health'),
+        ('marcus.washington@email.com', 'cardiac_anticoag'),
+        ('helen.reeves@email.com',      'chf_readmit'),
+        ('daniel.obrien@email.com',     'pain'),
+        ('sophia.morales@email.com',    'mental_health'),
+        ('frank.petrov@email.com',      'respiratory_smoker'),
+        ('irene.chang@email.com',       'fall_oa'),
+        ('laura.simmons@email.com',     'mental_health'),
+        ('omar.hassan@email.com',       'cardiometabolic'),
+        ('julia.bennett@email.com',     'allergy'),
+        ('victor.alvarez@email.com',    'cardiac_secondary'),
+        ('naomi.baker@email.com',       'migraine'),
+        ('samuel.reed@email.com',       'respiratory_smoker'),
+        ('tara.nguyen@email.com',       'cardiometabolic'),
+        ('leon.fischer@email.com',      'respiratory_smoker'),
+        ('maya.coleman@email.com',      'respiratory_mental'),
+        ('dennis.harper@email.com',     'chf_readmit'),
+        ('elena.ruiz@email.com',        'migraine')
+), risk_templates(profile, sort_order, risk_name, level, details) AS (
+    VALUES
+        ('allergy', 1, 'Medication Sensitivity', 'Moderate', 'Allergy history requires medication review.'),
+        ('allergy', 2, 'Anaphylaxis Risk', 'Low', 'Counseling needed when exposures escalate.'),
+        ('cardiometabolic', 1, 'Cardiovascular Risk', 'Moderate', 'Chronic metabolic disease increases long-term risk.'),
+        ('cardiometabolic', 2, 'Medication Risk', 'Low', 'Routine monitoring for adherence and side effects.'),
+        ('pain', 1, 'Fall Risk', 'Low', 'Pain flares may reduce mobility and balance.'),
+        ('pain', 2, 'Medication Risk', 'Low', 'Sedating medications used intermittently.'),
+        ('low_default', 1, 'Medication Risk', 'Low', 'Minimal routine medication burden.'),
+        ('respiratory_mental', 1, 'Respiratory Risk', 'Moderate', 'Monitor for exacerbations and rescue use.'),
+        ('respiratory_mental', 2, 'Behavioral Health', 'Moderate', 'Symptoms can affect adherence and sleep.'),
+        ('migraine', 1, 'Medication Overuse', 'Low', 'Monitor PRN therapy frequency.'),
+        ('migraine', 2, 'Functional Impact', 'Moderate', 'Migraine flares can affect work and sleep.'),
+        ('cardiometabolic_complex', 1, 'Renal Risk', 'Moderate', 'Kidney disease requires medication monitoring.'),
+        ('cardiometabolic_complex', 2, 'Cardiovascular Risk', 'High', 'Diabetes and CKD increase complication risk.'),
+        ('neuro_fall', 1, 'Fall Risk', 'High', 'Neurologic symptoms increase instability risk.'),
+        ('neuro_fall', 2, 'Polypharmacy', 'Moderate', 'Multiple chronic medications require reconciliation.'),
+        ('mental_health', 1, 'Behavioral Health', 'Moderate', 'Mood/anxiety symptoms need ongoing follow-up.'),
+        ('mental_health', 2, 'Medication Risk', 'Low', 'Monitor response and side effects after titration.'),
+        ('cardiac_anticoag', 1, 'Bleeding Risk', 'Moderate', 'Anticoagulation increases bleeding risk.'),
+        ('cardiac_anticoag', 2, 'Cardiovascular Risk', 'High', 'Arrhythmia and hypertension require close monitoring.'),
+        ('chf_readmit', 1, 'Readmission Risk', 'High', 'Heart failure history increases readmission risk.'),
+        ('chf_readmit', 2, 'Fluid Balance', 'High', 'Requires weight and symptom monitoring.'),
+        ('respiratory_smoker', 1, 'Respiratory Risk', 'High', 'Chronic lung disease and smoking increase exacerbation risk.'),
+        ('respiratory_smoker', 2, 'Infection Risk', 'Moderate', 'Pulmonary infections can destabilize symptoms.'),
+        ('fall_oa', 1, 'Fall Risk', 'Moderate', 'Joint pain may limit gait stability.'),
+        ('fall_oa', 2, 'Medication Risk', 'Low', 'NSAID monitoring needed with chronic use.'),
+        ('cardiac_secondary', 1, 'Cardiovascular Risk', 'High', 'Established CAD requires aggressive secondary prevention.'),
+        ('cardiac_secondary', 2, 'Medication Risk', 'Moderate', 'Multiple cardiac medications need periodic review.')
+)
+INSERT INTO patient_risks (patient_id, risk_name, level, details, sort_order)
+SELECT p.id, rt.risk_name, rt.level, rt.details, rt.sort_order
+FROM patients p
+JOIN risk_profiles rp ON rp.email = p.email
+JOIN risk_templates rt ON rt.profile = rp.profile
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM patient_risks existing
+    WHERE existing.patient_id = p.id
+      AND lower(existing.risk_name) = lower(rt.risk_name)
+);

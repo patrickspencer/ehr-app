@@ -47,6 +47,11 @@ abstract class BaseIntegrationTest {
     fun resetData() {
         if (!initialized.compareAndSet(false, true)) return
 
+        jdbcTemplate.execute("DELETE FROM patient_allergies")
+        jdbcTemplate.execute("DELETE FROM patient_conditions")
+        jdbcTemplate.execute("DELETE FROM patient_medications")
+        jdbcTemplate.execute("DELETE FROM patient_risks")
+
         if (fhirClient != null) {
             wipeFhirResources("DocumentReference")
             wipeFhirResources("Procedure")
@@ -132,6 +137,99 @@ abstract class BaseIntegrationTest {
             "/api/patients/$michaelId/notes",
             NoteCreateRequest("Annual physical exam. Blood pressure 128/82, BMI 24.5. All labs normal.", "Dr. Thompson"),
             Void::class.java
+        )
+
+        seedClinicalData(sarahId, michaelId)
+    }
+
+    private fun seedClinicalData(sarahId: Long, michaelId: Long) {
+        jdbcTemplate.update(
+            """
+            INSERT INTO patient_allergies (patient_id, allergen, reaction, severity, noted_at, sort_order)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """.trimIndent(),
+            sarahId, "Pollen", "Sneezing and congestion", "Moderate", LocalDate.of(2019, 4, 12), 1
+        )
+        jdbcTemplate.update(
+            """
+            INSERT INTO patient_allergies (patient_id, allergen, reaction, severity, noted_at, sort_order)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """.trimIndent(),
+            sarahId, "Cat dander", "Itchy eyes and wheezing", "Low", LocalDate.of(2020, 8, 3), 2
+        )
+        jdbcTemplate.update(
+            """
+            INSERT INTO patient_conditions (patient_id, condition_name, icd10_code, status, diagnosed_at, notes, sort_order)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """.trimIndent(),
+            sarahId, "Allergic rhinitis", "J30.1", "Active", LocalDate.of(2019, 4, 12), "Seasonal spring flare pattern.", 1
+        )
+        jdbcTemplate.update(
+            """
+            INSERT INTO patient_medications (patient_id, medication_name, dose, route, frequency, status, started_at, instructions, sort_order)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """.trimIndent(),
+            sarahId,
+            "Cetirizine",
+            "10 mg",
+            "Oral",
+            "Daily",
+            "Active",
+            LocalDate.of(2024, 3, 10),
+            "Take during high-allergen seasons.",
+            1
+        )
+
+        jdbcTemplate.update(
+            """
+            INSERT INTO patient_allergies (patient_id, allergen, reaction, severity, noted_at, sort_order)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """.trimIndent(),
+            michaelId, "Shellfish", "Hives", "Moderate", LocalDate.of(2015, 6, 9), 1
+        )
+        jdbcTemplate.update(
+            """
+            INSERT INTO patient_conditions (patient_id, condition_name, icd10_code, status, diagnosed_at, notes, sort_order)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """.trimIndent(),
+            michaelId, "Essential hypertension", "I10", "Active", LocalDate.of(2022, 3, 14), "Home readings borderline.", 1
+        )
+        jdbcTemplate.update(
+            """
+            INSERT INTO patient_medications (patient_id, medication_name, dose, route, frequency, status, started_at, instructions, sort_order)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """.trimIndent(),
+            michaelId,
+            "Lisinopril",
+            "10 mg",
+            "Oral",
+            "Daily",
+            "Active",
+            LocalDate.of(2023, 3, 14),
+            "Hold for symptomatic hypotension.",
+            1
+        )
+        jdbcTemplate.update(
+            """
+            INSERT INTO patient_risks (patient_id, risk_name, level, details, sort_order)
+            VALUES (?, ?, ?, ?, ?)
+            """.trimIndent(),
+            sarahId,
+            "Medication Sensitivity",
+            "Moderate",
+            "Allergy history requires medication review.",
+            1
+        )
+        jdbcTemplate.update(
+            """
+            INSERT INTO patient_risks (patient_id, risk_name, level, details, sort_order)
+            VALUES (?, ?, ?, ?, ?)
+            """.trimIndent(),
+            michaelId,
+            "Cardiovascular Risk",
+            "Moderate",
+            "Chronic metabolic disease increases long-term risk.",
+            1
         )
     }
 
