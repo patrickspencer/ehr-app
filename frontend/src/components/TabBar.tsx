@@ -1,20 +1,60 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, type DragEvent } from "react";
 import { useTabs } from "@/contexts/TabContext";
 import { getPatients } from "@/lib/api";
 import { Patient } from "@/types";
 
+function createTabDragPreview(tabElement: HTMLDivElement, label: string) {
+  const rect = tabElement.getBoundingClientRect();
+  const preview = document.createElement("div");
+
+  preview.textContent = label;
+  preview.style.position = "fixed";
+  preview.style.top = "-1000px";
+  preview.style.left = "-1000px";
+  preview.style.display = "flex";
+  preview.style.alignItems = "center";
+  preview.style.whiteSpace = "nowrap";
+  preview.style.width = `${rect.width}px`;
+  preview.style.height = `${rect.height}px`;
+  preview.style.margin = "0";
+  preview.style.padding = "8px 16px";
+  preview.style.borderRadius = "10px 10px 0 0";
+  preview.style.borderBottom = "2px solid rgb(71 85 105)";
+  preview.style.background = "rgb(255 255 255)";
+  preview.style.color = "rgb(51 65 85)";
+  preview.style.fontSize = "14px";
+  preview.style.fontWeight = "500";
+  preview.style.lineHeight = "20px";
+  preview.style.boxSizing = "border-box";
+  preview.style.pointerEvents = "none";
+  preview.style.opacity = "1";
+  preview.style.transform = "none";
+  preview.style.boxShadow = "0 10px 24px rgba(15, 23, 42, 0.18)";
+  preview.style.zIndex = "9999";
+
+  document.body.appendChild(preview);
+
+  return { preview, rect };
+}
+
 export default function TabBar({ onHomeClick }: { onHomeClick?: () => void }) {
-  const { tabs, activeTabId, setActiveTab, closeTab, openTab } = useTabs();
+  const { tabs, activeTabId, setActiveTab, closeTab, openTab, reorderTabs } = useTabs();
   const [confirmClose, setConfirmClose] = useState<number | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(false);
+  const [draggedTabId, setDraggedTabId] = useState<number | null>(null);
+  const [dropTarget, setDropTarget] = useState<{
+    patientId: number;
+    position: "before" | "after";
+  } | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const dragPreviewRef = useRef<HTMLDivElement | null>(null);
 
   const fetchPatients = useCallback((q: string) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -70,15 +110,87 @@ export default function TabBar({ onHomeClick }: { onHomeClick?: () => void }) {
     setSearchOpen(false);
   };
 
+  const clearDragState = () => {
+    if (dragPreviewRef.current) {
+      dragPreviewRef.current.remove();
+      dragPreviewRef.current = null;
+    }
+
+    setDraggedTabId(null);
+    setDropTarget(null);
+  };
+
+  const handleTabDragStart = (
+    event: DragEvent<HTMLDivElement>,
+    patientId: number,
+  ) => {
+    window.getSelection()?.removeAllRanges();
+
+    const tab = tabs.find((item) => item.patientId === patientId);
+    const { preview, rect } = createTabDragPreview(
+      event.currentTarget,
+      tab?.patientName ?? "Patient",
+    );
+    const offsetX = event.clientX - rect.left || rect.width / 2;
+    const offsetY = event.clientY - rect.top || rect.height / 2;
+
+    if (dragPreviewRef.current) {
+      dragPreviewRef.current.remove();
+    }
+    dragPreviewRef.current = preview;
+
+    setDraggedTabId(patientId);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", String(patientId));
+    event.dataTransfer.setDragImage(preview, offsetX, offsetY);
+  };
+
+  const handleTabDragOver = (
+    event: DragEvent<HTMLDivElement>,
+    patientId: number,
+  ) => {
+    if (draggedTabId === null || draggedTabId === patientId) return;
+
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const midpoint = rect.left + rect.width / 2;
+    const position = event.clientX < midpoint ? "before" : "after";
+
+    setDropTarget((current) => {
+      if (
+        current?.patientId === patientId &&
+        current.position === position
+      ) {
+        return current;
+      }
+
+      return { patientId, position };
+    });
+  };
+
+  const handleTabDrop = (event: DragEvent<HTMLDivElement>, patientId: number) => {
+    event.preventDefault();
+
+    if (draggedTabId === null || draggedTabId === patientId || !dropTarget) {
+      clearDragState();
+      return;
+    }
+
+    reorderTabs(draggedTabId, patientId, dropTarget.position);
+    clearDragState();
+  };
+
   return (
     <>
-      <div className="flex items-center border-b border-gray-200 bg-gray-50 px-4">
+      <div className="flex items-end border-b border-slate-700 bg-slate-300 px-4 shadow-sm">
         <button
           onClick={() => { setActiveTab(null); onHomeClick?.(); }}
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-t-lg transition-colors ${
+          className={`-mb-px flex h-[41px] w-10 shrink-0 items-center justify-center rounded-t-lg transition-colors ${
             activeTabId === null
-              ? "bg-white text-slate-600 border-b-2 border-slate-600"
-              : "text-gray-500 hover:text-gray-700"
+              ? "border-b-2 border-transparent bg-white text-slate-700"
+              : "text-slate-700 hover:bg-slate-400/80 hover:text-slate-900"
           }`}
           title="Home"
         >
@@ -90,10 +202,10 @@ export default function TabBar({ onHomeClick }: { onHomeClick?: () => void }) {
         <div className="relative" ref={searchRef}>
           <button
             onClick={() => setSearchOpen(!searchOpen)}
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-t-lg transition-colors ${
+            className={`-mb-px flex h-[41px] w-10 shrink-0 items-center justify-center rounded-t-lg transition-colors ${
               searchOpen
-                ? "bg-white text-slate-600 border-b-2 border-slate-600"
-                : "text-gray-500 hover:text-gray-700"
+                ? "border-b-2 border-transparent bg-white text-slate-700"
+                : "text-slate-700 hover:bg-slate-400/80 hover:text-slate-900"
             }`}
             title="Search patients"
           >
@@ -144,15 +256,35 @@ export default function TabBar({ onHomeClick }: { onHomeClick?: () => void }) {
           {tabs.map((tab) => (
             <div
               key={tab.patientId}
-              className={`group flex shrink-0 items-center gap-1 border-b-2 px-4 py-2 text-sm font-medium cursor-pointer transition-colors ${
+              draggable
+              onDragStart={(event) => handleTabDragStart(event, tab.patientId)}
+              onDragOver={(event) => handleTabDragOver(event, tab.patientId)}
+              onDrop={(event) => handleTabDrop(event, tab.patientId)}
+              onDragEnd={clearDragState}
+              className={`group relative -mb-px flex h-[41px] shrink-0 select-none items-center gap-1 border-b-2 px-4 text-sm font-medium transition-[transform,box-shadow,opacity,background-color,border-color,color] duration-150 ${
                 activeTabId === tab.patientId
-                  ? "border-slate-600 bg-white text-slate-700"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                  ? "border-transparent bg-white text-slate-700"
+                  : "border-transparent text-slate-700 hover:border-slate-500 hover:bg-slate-200 hover:text-slate-900"
+              } ${
+                dropTarget?.patientId === tab.patientId && draggedTabId !== tab.patientId
+                  ? "bg-slate-400 text-slate-900"
+                  : ""
+              } ${
+                draggedTabId === tab.patientId
+                  ? "z-10 -translate-y-0.5 cursor-grabbing bg-white shadow-md ring-1 ring-slate-300"
+                  : "cursor-grab"
               }`}
               onClick={() => setActiveTab(tab.patientId)}
             >
+              {dropTarget?.patientId === tab.patientId && dropTarget.position === "before" && (
+                <div className="pointer-events-none absolute inset-y-1.5 -left-1 w-1 rounded-full bg-slate-600 shadow-[0_0_0_2px_rgba(249,250,251,0.95)]" />
+              )}
+              {dropTarget?.patientId === tab.patientId && dropTarget.position === "after" && (
+                <div className="pointer-events-none absolute inset-y-1.5 -right-1 w-1 rounded-full bg-slate-600 shadow-[0_0_0_2px_rgba(249,250,251,0.95)]" />
+              )}
               <span>{tab.patientName}</span>
               <button
+                draggable={false}
                 onClick={(e) => {
                   e.stopPropagation();
                   setConfirmClose(tab.patientId);

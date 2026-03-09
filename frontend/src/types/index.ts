@@ -32,6 +32,78 @@ export interface PatientCreateRequest {
   address: string;
 }
 
+export interface PatientAllergy {
+  id: number;
+  patientId: number;
+  allergen: string;
+  reaction: string | null;
+  severity: string;
+  notedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PatientAllergyUpsertRequest {
+  allergen: string;
+  reaction: string;
+  severity: string;
+  notedAt: string;
+}
+
+export interface PatientCondition {
+  id: number;
+  patientId: number;
+  conditionName: string;
+  icd10Code: string | null;
+  status: string;
+  diagnosedAt: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PatientConditionUpsertRequest {
+  conditionName: string;
+  icd10Code: string;
+  status: string;
+  diagnosedAt: string;
+  notes: string;
+}
+
+export interface PatientMedication {
+  id: number;
+  patientId: number;
+  medicationName: string;
+  dose: string | null;
+  route: string | null;
+  frequency: string | null;
+  status: string;
+  startedAt: string | null;
+  instructions: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PatientMedicationUpsertRequest {
+  medicationName: string;
+  dose: string;
+  route: string;
+  frequency: string;
+  status: string;
+  startedAt: string;
+  instructions: string;
+}
+
+export interface PatientRisk {
+  id: number;
+  patientId: number;
+  riskName: string;
+  level: string;
+  details: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Note {
   id: number;
   patientId: number;

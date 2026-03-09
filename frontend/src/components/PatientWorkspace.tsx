@@ -4,6 +4,13 @@ import { useEffect, useState, useCallback } from "react";
 import {
   Patient,
   PatientCreateRequest,
+  PatientAllergy,
+  PatientAllergyUpsertRequest,
+  PatientCondition,
+  PatientConditionUpsertRequest,
+  PatientMedication,
+  PatientMedicationUpsertRequest,
+  PatientRisk,
   Note,
   NoteCreateRequest,
   Encounter,
@@ -11,8 +18,20 @@ import {
 } from "@/types";
 import {
   getPatient,
-  deletePatient,
   updatePatient,
+  getPatientAllergies,
+  createPatientAllergy,
+  updatePatientAllergy,
+  deletePatientAllergy,
+  getPatientConditions,
+  createPatientCondition,
+  updatePatientCondition,
+  deletePatientCondition,
+  getPatientMedications,
+  createPatientMedication,
+  updatePatientMedication,
+  deletePatientMedication,
+  getPatientRisks,
   getNotes,
   createNote,
   getEncounters,
@@ -27,10 +46,11 @@ import {
   searchIcd10Codes,
   searchCptCodes,
 } from "@/lib/api";
-import { useTabs } from "@/contexts/TabContext";
-import PatientSidebar, { SidebarSection } from "@/components/PatientSidebar";
+import PatientSidebar from "@/components/PatientSidebar";
+import PatientSubnav, { PatientSection } from "@/components/PatientSubnav";
 import PatientForm from "@/components/PatientForm";
 import EncounterForm from "@/components/EncounterForm";
+import { AllergyCard, ConditionCard, MedicationCard } from "@/components/PatientClinicalCards";
 import EncounterList from "@/components/EncounterList";
 import NoteList from "@/components/NoteList";
 import NoteForm from "@/components/NoteForm";
@@ -64,7 +84,7 @@ const statusColors: Record<string, string> = {
   CANCELLED: "bg-gray-100 text-gray-600",
 };
 
-function viewToSection(view: WorkspaceView): SidebarSection {
+function viewToSection(view: WorkspaceView): PatientSection {
   switch (view.type) {
     case "overview":
     case "editPatient":
@@ -84,9 +104,12 @@ interface PatientWorkspaceProps {
 }
 
 export default function PatientWorkspace({ patientId }: PatientWorkspaceProps) {
-  const { closeTab } = useTabs();
   const [view, setView] = useState<WorkspaceView>({ type: "overview" });
   const [patient, setPatient] = useState<Patient | null>(null);
+  const [allergies, setAllergies] = useState<PatientAllergy[]>([]);
+  const [conditions, setConditions] = useState<PatientCondition[]>([]);
+  const [medications, setMedications] = useState<PatientMedication[]>([]);
+  const [risks, setRisks] = useState<PatientRisk[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,12 +117,20 @@ export default function PatientWorkspace({ patientId }: PatientWorkspaceProps) {
   useEffect(() => {
     async function load() {
       try {
-        const [p, n, e] = await Promise.all([
+        const [p, a, c, m, r, n, e] = await Promise.all([
           getPatient(patientId),
+          getPatientAllergies(patientId),
+          getPatientConditions(patientId),
+          getPatientMedications(patientId),
+          getPatientRisks(patientId),
           getNotes(patientId),
           getEncounters(patientId),
         ]);
         setPatient(p);
+        setAllergies(a);
+        setConditions(c);
+        setMedications(m);
+        setRisks(r);
         setNotes(n);
         setEncounters(e);
       } catch {
@@ -110,12 +141,6 @@ export default function PatientWorkspace({ patientId }: PatientWorkspaceProps) {
     }
     load();
   }, [patientId]);
-
-  async function handleDeletePatient() {
-    if (!confirm("Are you sure you want to delete this patient?")) return;
-    await deletePatient(patientId);
-    closeTab(patientId);
-  }
 
   async function handleUpdatePatient(data: PatientCreateRequest) {
     const updated = await updatePatient(patientId, data);
@@ -128,6 +153,51 @@ export default function PatientWorkspace({ patientId }: PatientWorkspaceProps) {
     setNotes((prev) => [...prev, note]);
   }
 
+  async function handleCreateAllergy(data: PatientAllergyUpsertRequest) {
+    const allergy = await createPatientAllergy(patientId, data);
+    setAllergies((prev) => [...prev, allergy]);
+  }
+
+  async function handleUpdateAllergy(id: number, data: PatientAllergyUpsertRequest) {
+    const allergy = await updatePatientAllergy(patientId, id, data);
+    setAllergies((prev) => prev.map((item) => (item.id === id ? allergy : item)));
+  }
+
+  async function handleDeleteAllergy(id: number) {
+    await deletePatientAllergy(patientId, id);
+    setAllergies((prev) => prev.filter((item) => item.id !== id));
+  }
+
+  async function handleCreateCondition(data: PatientConditionUpsertRequest) {
+    const condition = await createPatientCondition(patientId, data);
+    setConditions((prev) => [...prev, condition]);
+  }
+
+  async function handleUpdateCondition(id: number, data: PatientConditionUpsertRequest) {
+    const condition = await updatePatientCondition(patientId, id, data);
+    setConditions((prev) => prev.map((item) => (item.id === id ? condition : item)));
+  }
+
+  async function handleDeleteCondition(id: number) {
+    await deletePatientCondition(patientId, id);
+    setConditions((prev) => prev.filter((item) => item.id !== id));
+  }
+
+  async function handleCreateMedication(data: PatientMedicationUpsertRequest) {
+    const medication = await createPatientMedication(patientId, data);
+    setMedications((prev) => [...prev, medication]);
+  }
+
+  async function handleUpdateMedication(id: number, data: PatientMedicationUpsertRequest) {
+    const medication = await updatePatientMedication(patientId, id, data);
+    setMedications((prev) => prev.map((item) => (item.id === id ? medication : item)));
+  }
+
+  async function handleDeleteMedication(id: number) {
+    await deletePatientMedication(patientId, id);
+    setMedications((prev) => prev.filter((item) => item.id !== id));
+  }
+
   async function handleCreateEncounter(data: EncounterCreateRequest) {
     const enc = await createEncounter(patientId, data);
     setEncounters((prev) => [...prev, enc]);
@@ -138,7 +208,7 @@ export default function PatientWorkspace({ patientId }: PatientWorkspaceProps) {
     setView({ type: "encounterDetail", encounterId });
   }
 
-  function handleSidebarNavigate(section: SidebarSection) {
+  function handleSectionNavigate(section: PatientSection) {
     switch (section) {
       case "overview":
         setView({ type: "overview" });
@@ -173,27 +243,45 @@ export default function PatientWorkspace({ patientId }: PatientWorkspaceProps) {
   }
 
   return (
-    <div className="flex h-[calc(100vh-5rem)]">
+    <div className="flex h-[calc(100vh-5rem)] flex-col bg-gray-50 lg:flex-row">
       <PatientSidebar
-        activeSection={viewToSection(view)}
-        onNavigate={handleSidebarNavigate}
-        patientName={`${patient.firstName} ${patient.lastName}`}
+        patient={patient}
+        allergies={allergies}
+        conditions={conditions}
+        risks={risks}
       />
-      <div className="flex-1 overflow-y-auto px-6 py-6">
-        <WorkspaceContent
-          view={view}
-          setView={setView}
-          patient={patient}
-          notes={notes}
-          encounters={encounters}
-          patientId={patientId}
-          onDeletePatient={handleDeletePatient}
-          onUpdatePatient={handleUpdatePatient}
-          onAddNote={handleAddNote}
-          onCreateEncounter={handleCreateEncounter}
-          onViewEncounter={handleViewEncounter}
-          onEncountersChanged={setEncounters}
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <PatientSubnav
+          activeSection={viewToSection(view)}
+          onNavigate={handleSectionNavigate}
         />
+        <div className="min-h-0 flex-1 overflow-y-auto px-3 pt-3 pb-5">
+          <WorkspaceContent
+            view={view}
+            setView={setView}
+            patient={patient}
+            allergies={allergies}
+            conditions={conditions}
+            medications={medications}
+            notes={notes}
+            encounters={encounters}
+            patientId={patientId}
+            onUpdatePatient={handleUpdatePatient}
+            onCreateAllergy={handleCreateAllergy}
+            onUpdateAllergy={handleUpdateAllergy}
+            onDeleteAllergy={handleDeleteAllergy}
+            onCreateCondition={handleCreateCondition}
+            onUpdateCondition={handleUpdateCondition}
+            onDeleteCondition={handleDeleteCondition}
+            onCreateMedication={handleCreateMedication}
+            onUpdateMedication={handleUpdateMedication}
+            onDeleteMedication={handleDeleteMedication}
+            onAddNote={handleAddNote}
+            onCreateEncounter={handleCreateEncounter}
+            onViewEncounter={handleViewEncounter}
+            onEncountersChanged={setEncounters}
+          />
+        </div>
       </div>
     </div>
   );
@@ -204,11 +292,22 @@ function WorkspaceContent({
   view,
   setView,
   patient,
+  allergies,
+  conditions,
+  medications,
   notes,
   encounters,
   patientId,
-  onDeletePatient,
   onUpdatePatient,
+  onCreateAllergy,
+  onUpdateAllergy,
+  onDeleteAllergy,
+  onCreateCondition,
+  onUpdateCondition,
+  onDeleteCondition,
+  onCreateMedication,
+  onUpdateMedication,
+  onDeleteMedication,
   onAddNote,
   onCreateEncounter,
   onViewEncounter,
@@ -217,11 +316,22 @@ function WorkspaceContent({
   view: WorkspaceView;
   setView: (v: WorkspaceView) => void;
   patient: Patient;
+  allergies: PatientAllergy[];
+  conditions: PatientCondition[];
+  medications: PatientMedication[];
   notes: Note[];
   encounters: Encounter[];
   patientId: number;
-  onDeletePatient: () => void;
   onUpdatePatient: (data: PatientCreateRequest) => Promise<void>;
+  onCreateAllergy: (data: PatientAllergyUpsertRequest) => Promise<void>;
+  onUpdateAllergy: (id: number, data: PatientAllergyUpsertRequest) => Promise<void>;
+  onDeleteAllergy: (id: number) => Promise<void>;
+  onCreateCondition: (data: PatientConditionUpsertRequest) => Promise<void>;
+  onUpdateCondition: (id: number, data: PatientConditionUpsertRequest) => Promise<void>;
+  onDeleteCondition: (id: number) => Promise<void>;
+  onCreateMedication: (data: PatientMedicationUpsertRequest) => Promise<void>;
+  onUpdateMedication: (id: number, data: PatientMedicationUpsertRequest) => Promise<void>;
+  onDeleteMedication: (id: number) => Promise<void>;
   onAddNote: (data: NoteCreateRequest) => Promise<void>;
   onCreateEncounter: (data: EncounterCreateRequest) => Promise<void>;
   onViewEncounter: (id: number) => void;
@@ -302,7 +412,7 @@ function WorkspaceContent({
 
   if (view.type === "encounters") {
     return (
-      <div className="mx-auto max-w-3xl space-y-6">
+      <div className="max-w-3xl space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">Encounters</h1>
           <button
@@ -323,7 +433,7 @@ function WorkspaceContent({
 
   if (view.type === "charts") {
     return (
-      <div className="mx-auto max-w-3xl">
+      <div className="max-w-3xl">
         <h1 className="mb-6 text-2xl font-bold text-gray-900">Charts</h1>
         <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-12 text-center">
           <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
@@ -341,72 +451,20 @@ function WorkspaceContent({
   // Patient Chart (overview)
   return (
     <div className="space-y-6">
-      {/* Patient Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">
-          {patient.firstName} {patient.lastName}
-        </h1>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setView({ type: "editPatient" })}
-            className="rounded-lg bg-slate-600 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors"
-          >
-            Edit
-          </button>
-          <button
-            onClick={onDeletePatient}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-
       {/* Card Grid */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Demographics */}
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-          <div className="bg-slate-100 px-5 py-3 border-b border-slate-200">
-            <h2 className="text-sm font-semibold tracking-wide text-slate-700">Patient Demographics</h2>
-          </div>
-          <div className="p-5">
-            <dl className="grid grid-cols-2 gap-4">
-              <div>
-                <dt className="text-xs text-gray-500">Date of Birth</dt>
-                <dd className="mt-0.5 text-sm text-gray-900">{patient.dateOfBirth}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-gray-500">Gender</dt>
-                <dd className="mt-0.5 text-sm text-gray-900">{patient.gender}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-gray-500">Phone</dt>
-                <dd className="mt-0.5 text-sm text-gray-900">{patient.phone || "N/A"}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-gray-500">Email</dt>
-                <dd className="mt-0.5 text-sm text-gray-900">{patient.email || "N/A"}</dd>
-              </div>
-              <div className="col-span-2">
-                <dt className="text-xs text-gray-500">Address</dt>
-                <dd className="mt-0.5 text-sm text-gray-900">{patient.address || "N/A"}</dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Recent Encounters */}
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-          <div className="flex items-center justify-between bg-blue-50 px-5 py-3 border-b border-blue-200">
-            <h2 className="text-sm font-semibold tracking-wide text-blue-800">Recent Encounters</h2>
+        <div className="overflow-hidden rounded-lg border border-gray-200 border-t-4 border-t-blue-400 bg-white">
+          <div className="flex items-center justify-between border-b border-gray-200 bg-slate-50 px-3.5 py-2">
+            <h2 className="text-sm font-semibold tracking-wide text-gray-900">Recent Encounters</h2>
             <button
               onClick={() => setView({ type: "encounters" })}
-              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors"
+              className="text-xs font-medium text-blue-700 transition-colors hover:text-blue-900"
             >
               View all
             </button>
           </div>
-          <div className="p-5">
+          <div className="p-3.5">
             {encounters.length === 0 ? (
               <p className="text-sm text-gray-400">No encounters yet.</p>
             ) : (
@@ -420,57 +478,39 @@ function WorkspaceContent({
           </div>
         </div>
 
-        {/* Allergies */}
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-          <div className="flex items-center justify-between bg-amber-50 px-5 py-3 border-b border-amber-200">
-            <h2 className="text-sm font-semibold tracking-wide text-amber-800">Allergies</h2>
-            <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-medium text-amber-700 uppercase">
-              Coming soon
-            </span>
-          </div>
-          <div className="p-5">
-            <p className="text-sm text-gray-400">No known allergies.</p>
-          </div>
-        </div>
+        <AllergyCard
+          allergies={allergies}
+          onCreate={onCreateAllergy}
+          onUpdate={onUpdateAllergy}
+          onDelete={onDeleteAllergy}
+        />
 
-        {/* Medications */}
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-          <div className="flex items-center justify-between bg-emerald-50 px-5 py-3 border-b border-emerald-200">
-            <h2 className="text-sm font-semibold tracking-wide text-emerald-800">Medications</h2>
-            <span className="rounded-full bg-emerald-200 px-2 py-0.5 text-[10px] font-medium text-emerald-700 uppercase">
-              Coming soon
-            </span>
-          </div>
-          <div className="p-5">
-            <p className="text-sm text-gray-400">No active medications.</p>
-          </div>
-        </div>
+        <MedicationCard
+          medications={medications}
+          onCreate={onCreateMedication}
+          onUpdate={onUpdateMedication}
+          onDelete={onDeleteMedication}
+        />
 
-        {/* Prescriptions */}
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-          <div className="flex items-center justify-between bg-violet-50 px-5 py-3 border-b border-violet-200">
-            <h2 className="text-sm font-semibold tracking-wide text-violet-800">Prescriptions</h2>
-            <span className="rounded-full bg-violet-200 px-2 py-0.5 text-[10px] font-medium text-violet-700 uppercase">
-              Coming soon
-            </span>
-          </div>
-          <div className="p-5">
-            <p className="text-sm text-gray-400">No active prescriptions.</p>
-          </div>
-        </div>
+        <ConditionCard
+          conditions={conditions}
+          onCreate={onCreateCondition}
+          onUpdate={onUpdateCondition}
+          onDelete={onDeleteCondition}
+        />
 
         {/* Clinical Notes */}
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-          <div className="bg-cyan-50 px-5 py-3 border-b border-cyan-200">
-            <h2 className="text-sm font-semibold tracking-wide text-cyan-800">Clinical Notes</h2>
+        <div className="overflow-hidden rounded-lg border border-gray-200 border-t-4 border-t-cyan-400 bg-white">
+          <div className="border-b border-gray-200 bg-slate-50 px-3.5 py-2">
+            <h2 className="text-sm font-semibold tracking-wide text-gray-900">Clinical Notes</h2>
           </div>
-          <div className="p-5">
-            {notes.filter((n) => !n.encounterId).length === 0 ? (
+          <div className="p-3.5">
+            {notes.length === 0 ? (
               <p className="text-sm text-gray-400">No notes yet.</p>
             ) : (
-              <NoteList notes={notes.filter((n) => !n.encounterId)} />
+              <NoteList notes={notes} />
             )}
-            <div className="mt-4 border-t border-gray-100 pt-4">
+            <div className="mt-2.5 border-t border-gray-100 pt-2.5">
               <NoteForm onSubmit={onAddNote} />
             </div>
           </div>

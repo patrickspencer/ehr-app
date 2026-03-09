@@ -13,6 +13,7 @@ interface TabContextValue {
   activeTabId: number | null;
   openTab: (patient: { id: number; firstName: string; lastName: string }) => void;
   closeTab: (patientId: number) => void;
+  reorderTabs: (draggedTabId: number, targetTabId: number, position: "before" | "after") => void;
   setActiveTab: (id: number | null) => void;
 }
 
@@ -40,9 +41,12 @@ function saveTabs(userId: number, tabs: Tab[], activeTabId: number | null) {
 }
 
 export function TabProvider({ userId, children }: { userId: number; children: ReactNode }) {
-  const initial = useRef(loadTabs(userId));
-  const [tabs, setTabs] = useState<Tab[]>(initial.current.tabs);
-  const [activeTabId, setActiveTabId] = useState<number | null>(initial.current.activeTabId);
+  const [tabs, setTabs] = useState<Tab[]>(() => (
+    typeof window === "undefined" ? [] : loadTabs(userId).tabs
+  ));
+  const [activeTabId, setActiveTabId] = useState<number | null>(() => (
+    typeof window === "undefined" ? null : loadTabs(userId).activeTabId
+  ));
   const backendLoaded = useRef(false);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -104,12 +108,41 @@ export function TabProvider({ userId, children }: { userId: number; children: Re
     });
   }, []);
 
+  const reorderTabs = useCallback((
+    draggedTabId: number,
+    targetTabId: number,
+    position: "before" | "after",
+  ) => {
+    if (draggedTabId === targetTabId) return;
+
+    setTabs((prev) => {
+      const draggedIndex = prev.findIndex((tab) => tab.patientId === draggedTabId);
+      const targetIndex = prev.findIndex((tab) => tab.patientId === targetTabId);
+
+      if (draggedIndex === -1 || targetIndex === -1) return prev;
+
+      const next = [...prev];
+      const [draggedTab] = next.splice(draggedIndex, 1);
+
+      let insertIndex = targetIndex;
+      if (draggedIndex < targetIndex) insertIndex -= 1;
+      if (position === "after") insertIndex += 1;
+
+      insertIndex = Math.max(0, Math.min(insertIndex, next.length));
+      next.splice(insertIndex, 0, draggedTab);
+
+      return next;
+    });
+  }, []);
+
   const setActiveTab = useCallback((id: number | null) => {
     setActiveTabId(id);
   }, []);
 
   return (
-    <TabContext.Provider value={{ tabs, activeTabId, openTab, closeTab, setActiveTab }}>
+    <TabContext.Provider
+      value={{ tabs, activeTabId, openTab, closeTab, reorderTabs, setActiveTab }}
+    >
       {children}
     </TabContext.Provider>
   );

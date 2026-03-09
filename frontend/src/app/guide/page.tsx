@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { CodeBlock, InlineCode, Table, GuideNav } from "./components";
 
 const sections = [
@@ -23,12 +24,12 @@ export default function GuidePage() {
       <header className="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
           <h1 className="text-lg font-bold text-slate-700">Developer Guide</h1>
-          <a
+          <Link
             href="/"
             className="text-sm text-slate-500 hover:text-slate-700"
           >
             &larr; Back to app
-          </a>
+          </Link>
         </div>
       </header>
 
@@ -218,7 +219,7 @@ npm run dev`}</CodeBlock>
               <li>
                 Click on a user (e.g. &quot;Sarah Roberts, MD&quot;) to sign in
               </li>
-              <li>You should see the patient list with 19 patients</li>
+              <li>You should see the patient list with 30 patients</li>
               <li>
                 Click a patient to see their chart, encounters, and notes
               </li>

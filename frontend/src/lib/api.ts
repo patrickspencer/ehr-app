@@ -1,4 +1,21 @@
-import { User, Patient, PatientCreateRequest, Note, NoteCreateRequest, Encounter, EncounterCreateRequest, Icd10Code, CptCode } from "@/types";
+import {
+  User,
+  Patient,
+  PatientCreateRequest,
+  PatientAllergy,
+  PatientAllergyUpsertRequest,
+  PatientCondition,
+  PatientConditionUpsertRequest,
+  PatientMedication,
+  PatientMedicationUpsertRequest,
+  PatientRisk,
+  Note,
+  NoteCreateRequest,
+  Encounter,
+  EncounterCreateRequest,
+  Icd10Code,
+  CptCode,
+} from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -51,6 +68,135 @@ export function updatePatient(id: number, data: PatientCreateRequest): Promise<P
 
 export function deletePatient(id: number): Promise<void> {
   return request<void>(`/api/patients/${id}`, { method: "DELETE" });
+}
+
+export function getPatientAllergies(patientId: number): Promise<PatientAllergy[]> {
+  return request<PatientAllergy[]>(`/api/patients/${patientId}/allergies`);
+}
+
+export function createPatientAllergy(
+  patientId: number,
+  data: PatientAllergyUpsertRequest
+): Promise<PatientAllergy> {
+  return request<PatientAllergy>(`/api/patients/${patientId}/allergies`, {
+    method: "POST",
+    body: JSON.stringify({
+      ...data,
+      reaction: data.reaction || null,
+      notedAt: data.notedAt || null,
+    }),
+  });
+}
+
+export function updatePatientAllergy(
+  patientId: number,
+  allergyId: number,
+  data: PatientAllergyUpsertRequest
+): Promise<PatientAllergy> {
+  return request<PatientAllergy>(`/api/patients/${patientId}/allergies/${allergyId}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      ...data,
+      reaction: data.reaction || null,
+      notedAt: data.notedAt || null,
+    }),
+  });
+}
+
+export function deletePatientAllergy(patientId: number, allergyId: number): Promise<void> {
+  return request<void>(`/api/patients/${patientId}/allergies/${allergyId}`, {
+    method: "DELETE",
+  });
+}
+
+export function getPatientConditions(patientId: number): Promise<PatientCondition[]> {
+  return request<PatientCondition[]>(`/api/patients/${patientId}/conditions`);
+}
+
+export function createPatientCondition(
+  patientId: number,
+  data: PatientConditionUpsertRequest
+): Promise<PatientCondition> {
+  return request<PatientCondition>(`/api/patients/${patientId}/conditions`, {
+    method: "POST",
+    body: JSON.stringify({
+      ...data,
+      icd10Code: data.icd10Code || null,
+      diagnosedAt: data.diagnosedAt || null,
+      notes: data.notes || null,
+    }),
+  });
+}
+
+export function updatePatientCondition(
+  patientId: number,
+  conditionId: number,
+  data: PatientConditionUpsertRequest
+): Promise<PatientCondition> {
+  return request<PatientCondition>(`/api/patients/${patientId}/conditions/${conditionId}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      ...data,
+      icd10Code: data.icd10Code || null,
+      diagnosedAt: data.diagnosedAt || null,
+      notes: data.notes || null,
+    }),
+  });
+}
+
+export function deletePatientCondition(patientId: number, conditionId: number): Promise<void> {
+  return request<void>(`/api/patients/${patientId}/conditions/${conditionId}`, {
+    method: "DELETE",
+  });
+}
+
+export function getPatientMedications(patientId: number): Promise<PatientMedication[]> {
+  return request<PatientMedication[]>(`/api/patients/${patientId}/medications`);
+}
+
+export function createPatientMedication(
+  patientId: number,
+  data: PatientMedicationUpsertRequest
+): Promise<PatientMedication> {
+  return request<PatientMedication>(`/api/patients/${patientId}/medications`, {
+    method: "POST",
+    body: JSON.stringify({
+      ...data,
+      dose: data.dose || null,
+      route: data.route || null,
+      frequency: data.frequency || null,
+      startedAt: data.startedAt || null,
+      instructions: data.instructions || null,
+    }),
+  });
+}
+
+export function updatePatientMedication(
+  patientId: number,
+  medicationId: number,
+  data: PatientMedicationUpsertRequest
+): Promise<PatientMedication> {
+  return request<PatientMedication>(`/api/patients/${patientId}/medications/${medicationId}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      ...data,
+      dose: data.dose || null,
+      route: data.route || null,
+      frequency: data.frequency || null,
+      startedAt: data.startedAt || null,
+      instructions: data.instructions || null,
+    }),
+  });
+}
+
+export function deletePatientMedication(patientId: number, medicationId: number): Promise<void> {
+  return request<void>(`/api/patients/${patientId}/medications/${medicationId}`, {
+    method: "DELETE",
+  });
+}
+
+export function getPatientRisks(patientId: number): Promise<PatientRisk[]> {
+  return request<PatientRisk[]>(`/api/patients/${patientId}/risks`);
 }
 
 export function getNotes(patientId: number): Promise<Note[]> {

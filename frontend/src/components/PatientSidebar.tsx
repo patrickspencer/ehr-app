@@ -1,70 +1,310 @@
 "use client";
 
-import React from "react";
-
-type SidebarSection = "overview" | "encounters" | "charts";
+import Image from "next/image";
+import type { ReactNode } from "react";
+import { Patient, PatientAllergy, PatientCondition, PatientRisk } from "@/types";
 
 interface PatientSidebarProps {
-  activeSection: SidebarSection;
-  onNavigate: (section: SidebarSection) => void;
-  patientName: string;
+  patient: Patient;
+  allergies: PatientAllergy[];
+  conditions: PatientCondition[];
+  risks: PatientRisk[];
 }
 
-const navItems: { key: SidebarSection; label: string; icon: React.ReactNode }[] = [
-  {
-    key: "overview",
-    label: "Overview",
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-      </svg>
-    ),
-  },
-  {
-    key: "encounters",
-    label: "Encounters",
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z" />
-      </svg>
-    ),
-  },
-  {
-    key: "charts",
-    label: "Charts",
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-      </svg>
-    ),
-  },
-];
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
 
-export type { SidebarSection };
+function parseDateOnly(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+}
 
-export default function PatientSidebar({ activeSection, onNavigate, patientName }: PatientSidebarProps) {
+function formatBirthDate(value: string) {
+  const date = parseDateOnly(value);
+  return date ? dateFormatter.format(date) : value;
+}
+
+function calculateAge(value: string) {
+  const date = parseDateOnly(value);
+  if (!date) return null;
+
+  const today = new Date();
+  let age = today.getFullYear() - date.getFullYear();
+  const monthDiff = today.getMonth() - date.getMonth();
+
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) {
+    age -= 1;
+  }
+
+  return age;
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <aside className="w-48 shrink-0 border-r border-gray-200 bg-gray-50">
-      <div className="border-b border-gray-200 px-3 py-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Patient</p>
-        <p className="mt-1 truncate text-sm font-semibold text-gray-900">{patientName}</p>
+    <div className="min-w-0 space-y-0.5">
+      <dt className="text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400">
+        {label}
+      </dt>
+      <dd className="break-words text-[13px] text-gray-800">{value}</dd>
+    </div>
+  );
+}
+
+function SectionTitle({ children }: { children: ReactNode }) {
+  return (
+    <h3 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+      {children}
+    </h3>
+  );
+}
+
+function RiskRow({
+  label,
+  level,
+  details,
+}: {
+  label: string;
+  level: string;
+  details?: string | null;
+}) {
+  const levelClass =
+    level === "High"
+      ? "bg-rose-100 text-rose-700"
+      : level === "Moderate"
+        ? "bg-amber-100 text-amber-700"
+        : "bg-slate-100 text-slate-600";
+
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
+      <div className="min-w-0">
+        <div className="truncate text-[11px] font-medium text-slate-700">{label}</div>
+        {details ? <div className="truncate text-[10px] text-slate-500">{details}</div> : null}
       </div>
-      <nav className="p-1.5">
-        {navItems.map((item) => (
-          <button
-            key={item.key}
-            onClick={() => onNavigate(item.key)}
-            className={`flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm font-medium transition-colors ${
-              activeSection === item.key
-                ? "bg-slate-50 text-slate-700"
-                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-            }`}
-          >
-            {item.icon}
-            {item.label}
-          </button>
-        ))}
-      </nav>
+      <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.06em] ${levelClass}`}>
+        {level}
+      </span>
+    </div>
+  );
+}
+
+function AllergyRow({
+  allergen,
+  reaction,
+  severity,
+}: {
+  allergen: string;
+  reaction?: string | null;
+  severity: string;
+}) {
+  const severityClass =
+    severity === "High"
+      ? "bg-rose-100 text-rose-700"
+      : severity === "Moderate"
+        ? "bg-amber-100 text-amber-700"
+        : "bg-slate-100 text-slate-600";
+
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-md border border-slate-200 bg-white px-2 py-1">
+      <div className="min-w-0">
+        <div className="truncate text-[11px] font-medium text-slate-700">{allergen}</div>
+        {reaction ? (
+          <div className="truncate text-[10px] text-slate-500">{reaction}</div>
+        ) : null}
+      </div>
+      <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.06em] ${severityClass}`}>
+        {severity}
+      </span>
+    </div>
+  );
+}
+
+function ConditionRow({
+  name,
+  status,
+}: {
+  name: string;
+  status: string;
+}) {
+  const statusClass =
+    status === "Active"
+      ? "bg-rose-100 text-rose-700"
+      : status === "Monitoring"
+        ? "bg-amber-100 text-amber-700"
+        : "bg-slate-100 text-slate-600";
+
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-md border border-slate-200 bg-white px-2 py-1">
+      <div className="min-w-0 truncate text-[11px] font-medium text-slate-700">{name}</div>
+      <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.06em] ${statusClass}`}>
+        {status}
+      </span>
+    </div>
+  );
+}
+
+function getAvatarSrc(gender: string) {
+  const normalized = gender.trim().toLowerCase();
+
+  if (
+    normalized === "female" ||
+    normalized === "woman" ||
+    normalized === "girl"
+  ) {
+    return "/avatars/patient-female.svg";
+  }
+
+  if (
+    normalized === "male" ||
+    normalized === "man" ||
+    normalized === "boy"
+  ) {
+    return "/avatars/patient-male.svg";
+  }
+
+  return "/avatars/patient-neutral.svg";
+}
+
+function getDemoMiddleName(patient: Patient) {
+  const normalized = patient.gender.trim().toLowerCase();
+
+  const femaleNames = ["Marie", "Rose", "Elise", "Claire"];
+  const maleNames = ["James", "Lee", "Thomas", "Reid"];
+  const neutralNames = ["Jordan", "Taylor", "Quinn", "Reese"];
+
+  const nameSet =
+    normalized === "female" || normalized === "woman" || normalized === "girl"
+      ? femaleNames
+      : normalized === "male" || normalized === "man" || normalized === "boy"
+        ? maleNames
+        : neutralNames;
+
+  return nameSet[patient.id % nameSet.length];
+}
+
+function getDemoMrn(patientId: number) {
+  return `MRN-${String(100000 + patientId).padStart(6, "0")}`;
+}
+
+export default function PatientSidebar({
+  patient,
+  allergies,
+  conditions,
+  risks,
+}: PatientSidebarProps) {
+  const age = calculateAge(patient.dateOfBirth);
+  const avatarSrc = getAvatarSrc(patient.gender || "");
+  const middleName = getDemoMiddleName(patient);
+  const mrn = getDemoMrn(patient.id);
+
+  return (
+    <aside className="flex w-full shrink-0 flex-col border-b border-gray-200 bg-white lg:h-full lg:w-[14.5rem] lg:border-r lg:border-b-0 lg:overflow-hidden">
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="space-y-3 px-3 py-2.5">
+          <section className="border-b border-slate-200 pb-2.5">
+            <div className="grid grid-cols-[35%_1fr] items-start gap-2.5">
+              <div className="relative aspect-square overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200">
+                <Image
+                  src={avatarSrc}
+                  alt={`${patient.firstName} ${patient.lastName} demo avatar`}
+                  fill
+                  sizes="(min-width: 1024px) 5rem, 35vw"
+                  className="object-cover"
+                />
+              </div>
+              <div className="flex min-w-0 flex-col self-start pt-0.5">
+                <div className="space-y-1 text-[12px] font-medium leading-tight text-gray-900">
+                  <div className="truncate">{patient.firstName}</div>
+                  <div className="truncate text-slate-600">{middleName}</div>
+                  <div className="truncate">{patient.lastName}</div>
+                </div>
+                <div className="mt-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-slate-500">
+                  {mrn}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-2.5">
+            <SectionTitle>Patient Info</SectionTitle>
+            <dl className="space-y-2.5">
+              <div className="grid grid-cols-2 gap-2.5">
+                <DetailRow label="Birth Date" value={formatBirthDate(patient.dateOfBirth)} />
+                <DetailRow
+                  label="Age"
+                  value={age === null ? "Not available" : `${age} years old`}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                <DetailRow label="Gender" value={patient.gender || "Not provided"} />
+                <DetailRow label="Phone" value={patient.phone || "Not provided"} />
+              </div>
+              <DetailRow label="Email" value={patient.email || "Not provided"} />
+              <DetailRow label="Address" value={patient.address || "Not provided"} />
+            </dl>
+          </section>
+
+          <section className="space-y-2.5 border-t border-slate-200 pt-2.5">
+            <SectionTitle>Risks</SectionTitle>
+            {risks.length === 0 ? (
+              <p className="text-[11px] text-slate-400">No flagged risks on file.</p>
+            ) : (
+              <div className="space-y-1.5">
+                {risks.slice(0, 4).map((risk) => (
+                  <RiskRow
+                    key={risk.id}
+                    label={risk.riskName}
+                    level={risk.level}
+                    details={risk.details}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="space-y-2.5 border-t border-slate-200 pt-2.5">
+            <SectionTitle>Allergies</SectionTitle>
+            {allergies.length === 0 ? (
+              <p className="text-[11px] text-slate-400">No allergies on file.</p>
+            ) : (
+              <div className="space-y-1.5">
+                {allergies.slice(0, 4).map((allergy) => (
+                  <AllergyRow
+                    key={allergy.id}
+                    allergen={allergy.allergen}
+                    reaction={allergy.reaction}
+                    severity={allergy.severity}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="space-y-2.5 border-t border-slate-200 pt-2.5">
+            <SectionTitle>Conditions</SectionTitle>
+            {conditions.length === 0 ? (
+              <p className="text-[11px] text-slate-400">No chronic conditions on file.</p>
+            ) : (
+              <div className="space-y-1.5">
+                {conditions.slice(0, 4).map((condition) => (
+                  <ConditionRow
+                    key={condition.id}
+                    name={condition.conditionName}
+                    status={condition.status}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+      </div>
+
+      <div className="border-t border-slate-200 bg-slate-50 px-2.5 py-1.5 text-[10px] text-slate-500">
+        v{process.env.APP_VERSION}
+      </div>
     </aside>
   );
 }
