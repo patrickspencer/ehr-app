@@ -15,7 +15,7 @@ export default function NoteList({ notes }: NoteListProps) {
     <div className="space-y-4">
       {notes.map((note) => (
         <div key={note.id} className="rounded-lg border border-gray-200 bg-white p-4">
-          <p className="text-sm text-gray-800 whitespace-pre-wrap">{note.content}</p>
+          <div className="prose prose-sm max-w-none text-gray-800" dangerouslySetInnerHTML={{ __html: note.content }} />
           <div className="mt-3 flex items-center gap-3 text-xs text-gray-500">
             <span className="font-medium text-gray-700">{note.author}</span>
             <span>{new Date(note.createdAt).toLocaleString()}</span>

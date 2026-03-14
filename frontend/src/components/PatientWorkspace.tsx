@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Patient,
   PatientCreateRequest,
@@ -56,6 +56,8 @@ import NoteList from "@/components/NoteList";
 import NoteForm from "@/components/NoteForm";
 import CodeList from "@/components/CodeList";
 import CodeSearch from "@/components/CodeSearch";
+import NoteEditor from "@/components/NoteEditor";
+import { useAuth } from "@/contexts/AuthContext";
 
 type WorkspaceView =
   | { type: "overview" }
@@ -64,7 +66,8 @@ type WorkspaceView =
   | { type: "newEncounter" }
   | { type: "encounterDetail"; encounterId: number }
   | { type: "editEncounter"; encounterId: number }
-  | { type: "charts" };
+  | { type: "charts" }
+  | { type: "notes" };
 
 const typeLabels: Record<string, string> = {
   OFFICE_VISIT: "Office Visit",
@@ -96,6 +99,8 @@ function viewToSection(view: WorkspaceView): PatientSection {
       return "encounters";
     case "charts":
       return "charts";
+    case "notes":
+      return "notes";
   }
 }
 
@@ -104,7 +109,13 @@ interface PatientWorkspaceProps {
 }
 
 export default function PatientWorkspace({ patientId }: PatientWorkspaceProps) {
+  const { user } = useAuth();
   const [view, setView] = useState<WorkspaceView>({ type: "overview" });
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteWidthPct, setNoteWidthPct] = useState(50);
+  const noteEditorGetHtml = useRef<(() => string) | null>(null);
+  const splitRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
   const [patient, setPatient] = useState<Patient | null>(null);
   const [allergies, setAllergies] = useState<PatientAllergy[]>([]);
   const [conditions, setConditions] = useState<PatientCondition[]>([]);
@@ -150,7 +161,7 @@ export default function PatientWorkspace({ patientId }: PatientWorkspaceProps) {
 
   async function handleAddNote(data: NoteCreateRequest) {
     const note = await createNote(patientId, data);
-    setNotes((prev) => [...prev, note]);
+    setNotes((prev) => [note, ...prev]);
   }
 
   async function handleCreateAllergy(data: PatientAllergyUpsertRequest) {
@@ -219,7 +230,33 @@ export default function PatientWorkspace({ patientId }: PatientWorkspaceProps) {
       case "charts":
         setView({ type: "charts" });
         break;
+      case "notes":
+        setView({ type: "notes" });
+        break;
     }
+  }
+
+  function handleDragStart(e: React.MouseEvent) {
+    e.preventDefault();
+    dragging.current = true;
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!dragging.current || !splitRef.current) return;
+      const rect = splitRef.current.getBoundingClientRect();
+      const x = ev.clientX - rect.left;
+      const pct = (x / rect.width) * 100;
+      setNoteWidthPct(Math.min(80, Math.max(20, 100 - pct)));
+    };
+    const onMouseUp = () => {
+      dragging.current = false;
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
   }
 
   if (loading) {
@@ -251,36 +288,97 @@ export default function PatientWorkspace({ patientId }: PatientWorkspaceProps) {
         risks={risks}
       />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <PatientSubnav
-          activeSection={viewToSection(view)}
-          onNavigate={handleSectionNavigate}
-        />
-        <div className="min-h-0 flex-1 overflow-y-auto px-3 pt-3 pb-5">
-          <WorkspaceContent
-            view={view}
-            setView={setView}
-            patient={patient}
-            allergies={allergies}
-            conditions={conditions}
-            medications={medications}
-            notes={notes}
-            encounters={encounters}
-            patientId={patientId}
-            onUpdatePatient={handleUpdatePatient}
-            onCreateAllergy={handleCreateAllergy}
-            onUpdateAllergy={handleUpdateAllergy}
-            onDeleteAllergy={handleDeleteAllergy}
-            onCreateCondition={handleCreateCondition}
-            onUpdateCondition={handleUpdateCondition}
-            onDeleteCondition={handleDeleteCondition}
-            onCreateMedication={handleCreateMedication}
-            onUpdateMedication={handleUpdateMedication}
-            onDeleteMedication={handleDeleteMedication}
-            onAddNote={handleAddNote}
-            onCreateEncounter={handleCreateEncounter}
-            onViewEncounter={handleViewEncounter}
-            onEncountersChanged={setEncounters}
+        <div className="flex items-end border-b border-slate-300 bg-slate-100 shadow-sm">
+          <PatientSubnav
+            activeSection={viewToSection(view)}
+            onNavigate={handleSectionNavigate}
           />
+          <button
+            onClick={() => setNoteOpen(true)}
+            className="my-1.5 ml-2 shrink-0 rounded-md bg-slate-600 px-3 py-1 text-xs font-medium text-white hover:bg-slate-700 transition-colors"
+          >
+            + Note
+          </button>
+        </div>
+        <div ref={splitRef} className={`min-h-0 flex-1 ${noteOpen ? "flex" : ""}`}>
+          <div
+            className={`overflow-y-auto px-3 pt-3 pb-5 ${noteOpen ? "min-w-0" : "h-full"}`}
+            style={noteOpen ? { width: `${100 - noteWidthPct}%` } : undefined}
+          >
+            <WorkspaceContent
+              view={view}
+              setView={setView}
+              patient={patient}
+              allergies={allergies}
+              conditions={conditions}
+              medications={medications}
+              notes={notes}
+              encounters={encounters}
+              patientId={patientId}
+              onUpdatePatient={handleUpdatePatient}
+              onCreateAllergy={handleCreateAllergy}
+              onUpdateAllergy={handleUpdateAllergy}
+              onDeleteAllergy={handleDeleteAllergy}
+              onCreateCondition={handleCreateCondition}
+              onUpdateCondition={handleUpdateCondition}
+              onDeleteCondition={handleDeleteCondition}
+              onCreateMedication={handleCreateMedication}
+              onUpdateMedication={handleUpdateMedication}
+              onDeleteMedication={handleDeleteMedication}
+              onAddNote={handleAddNote}
+              onCreateEncounter={handleCreateEncounter}
+              onViewEncounter={handleViewEncounter}
+              onEncountersChanged={setEncounters}
+            />
+          </div>
+          {noteOpen && (
+            <>
+              <div
+                onMouseDown={handleDragStart}
+                className="w-1 shrink-0 cursor-col-resize bg-gray-200 hover:bg-blue-400 transition-colors"
+              />
+              <div
+                className="flex min-w-0 flex-col overflow-hidden"
+                style={{ width: `${noteWidthPct}%` }}
+              >
+                <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3">
+                  <h2 className="text-sm font-semibold text-gray-900">Note</h2>
+                  <button
+                    onClick={() => setNoteOpen(false)}
+                    className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <NoteEditor onGetEditor={(getHtml) => { noteEditorGetHtml.current = getHtml; }} />
+                <div className="flex items-center gap-2 border-t border-gray-200 bg-white px-4 py-3">
+                  <button className="rounded-md bg-slate-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-slate-700 transition-colors">
+                    Save
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const html = noteEditorGetHtml.current?.() ?? "";
+                      if (!html || html === "<p></p>") return;
+                      const authorName = user ? `${user.firstName} ${user.lastName}` : "Unknown";
+                      await handleAddNote({ content: html, author: authorName });
+                      setNoteOpen(false);
+                    }}
+                    className="rounded-md bg-green-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-green-700 transition-colors"
+                  >
+                    Sign
+                  </button>
+                  <button
+                    onClick={() => setNoteOpen(false)}
+                    className="rounded-md px-4 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -431,6 +529,19 @@ function WorkspaceContent({
     );
   }
 
+  if (view.type === "notes") {
+    return (
+      <div className="max-w-3xl space-y-6">
+        <h1 className="text-2xl font-bold text-gray-900">Notes</h1>
+        {notes.length === 0 ? (
+          <p className="text-sm text-gray-400">No notes yet.</p>
+        ) : (
+          <NoteList notes={notes} />
+        )}
+      </div>
+    );
+  }
+
   if (view.type === "charts") {
     return (
       <div className="max-w-3xl">
@@ -565,7 +676,7 @@ function EncounterDetailView({
 
   async function handleAddNote(data: NoteCreateRequest) {
     const note = await createNote(patientId, data);
-    setNotes((prev) => [...prev, note]);
+    setNotes((prev) => [note, ...prev]);
   }
 
   async function handleAddDiagnosis(code: { id: number }) {

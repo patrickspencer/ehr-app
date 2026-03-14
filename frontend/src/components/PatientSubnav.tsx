@@ -1,6 +1,6 @@
 "use client";
 
-export type PatientSection = "overview" | "encounters" | "charts";
+export type PatientSection = "overview" | "encounters" | "charts" | "notes";
 
 interface PatientSubnavProps {
   activeSection: PatientSection;
@@ -20,6 +20,10 @@ const navItems: { key: PatientSection; label: string }[] = [
     key: "charts",
     label: "Charts",
   },
+  {
+    key: "notes",
+    label: "Notes",
+  },
 ];
 
 export default function PatientSubnav({
@@ -27,7 +31,7 @@ export default function PatientSubnav({
   onNavigate,
 }: PatientSubnavProps) {
   return (
-    <div className="border-b border-slate-300 bg-slate-100 pr-4 shadow-sm sm:pr-6">
+    <div className="pr-4 sm:pr-6">
       <nav className="flex items-end overflow-x-auto">
         {navItems.map((item) => (
           <button

@@ -13,7 +13,9 @@ function AuthGate({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const pathname = usePathname();
 
-  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
+  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+
+  if (isPublic && (!user || loading)) {
     return <>{children}</>;
   }
 
