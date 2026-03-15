@@ -49,7 +49,7 @@ jobs:
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         with:
-          host: <DEPLOY_HOST>
+          host: ${{ secrets.DEPLOY_HOST }}
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           envs: GH_PAT

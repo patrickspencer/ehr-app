@@ -32,3 +32,4 @@ docs/_build/
 .env.local
 !frontend/.env
 secrets.sh
+deploy/inventory.ini
