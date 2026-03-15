@@ -326,7 +326,7 @@ cd backend
             </h2>
             <p className="mb-2">
               The app is deployed on a DigitalOcean droplet at{" "}
-              <InlineCode><DEPLOY_HOST></InlineCode>.
+              <InlineCode>{"<DEPLOY_HOST>"}</InlineCode>.
             </p>
 
             <h3 className="mb-3 mt-6 text-lg font-semibold text-slate-700">
