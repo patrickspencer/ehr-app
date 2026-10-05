@@ -6,9 +6,9 @@ A full-stack electronic health records application built with Spring Boot (Kotli
 
 ## Screenshots
 
-Captured from the demo deployment with synthetic data. Sign in as any of the
-demo users, find a patient, and work in a tabbed chart with encounters,
-diagnoses and procedures, medications, allergies, conditions and notes.
+All data shown is synthetic. Sign in as any of the demo users, find a
+patient, and work in a tabbed chart with encounters, diagnoses and
+procedures, medications, allergies, conditions and notes.
 
 <table>
   <tr>
@@ -30,11 +30,13 @@ diagnoses and procedures, medications, allergies, conditions and notes.
 </table>
 
 The images are produced by `screenshots/capture.mjs`, a Playwright script that
-clicks through a running instance. To refresh them after a UI change:
+clicks through a running instance. To refresh them after a UI change, start
+the app locally (`./start.sh`) and run:
 
 ```bash
-cd screenshots && npm install && npm run capture          # against the demo site
-BASE_URL=http://localhost:3001 npm run capture             # against a local run
+cd screenshots && npm install && npx playwright install chromium
+npm run capture                                  # http://localhost:3001
+BASE_URL=http://host:port npm run capture        # any other instance
 ```
 
 ## 📖 Documentation

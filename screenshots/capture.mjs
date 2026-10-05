@@ -2,13 +2,14 @@
 // login, dashboard, patient finder, a patient chart and its sections, an
 // encounter, and the guide. Writes PNGs to docs/screenshots/.
 //
-//   BASE_URL=http://localhost:3001 npm run capture      (default: https://spencare.com)
+//   npm run capture                      (default: http://localhost:3001, see start.sh)
+//   BASE_URL=http://host:port npm run capture
 import { chromium } from "playwright";
 import { mkdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
-const base = (process.env.BASE_URL || "https://spencare.com").replace(/\/$/, "");
+const base = (process.env.BASE_URL || "http://localhost:3001").replace(/\/$/, "");
 const out = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "docs", "screenshots");
 await mkdir(out, { recursive: true });
 
