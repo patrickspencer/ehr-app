@@ -33,3 +33,4 @@ docs/_build/
 !frontend/.env
 secrets.sh
 deploy/inventory.ini
+screenshots/node_modules/

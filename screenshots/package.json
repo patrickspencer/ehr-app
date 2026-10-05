@@ -1,0 +1,12 @@
+{
+  "name": "ehr-app-screenshots",
+  "private": true,
+  "type": "module",
+  "description": "Captures the README screenshots from a running instance of the app.",
+  "scripts": {
+    "capture": "node capture.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}
